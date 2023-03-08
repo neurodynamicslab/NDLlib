@@ -358,11 +358,10 @@ System.out.println("Number of non NaN is :"+cnt+" Out of: "+Nrows*Ncols);
     return ( Gfit );
 } 
 /** * It is the workhorse of class.This prepares the data for fitting a polynomial and calls the  FitSurfaceCoef()
- to obtain the fit parameters.In this case these are the coefficients of the polynomial. The polyOrder needs to be set or default of order 5 is assumed. 
+ to obtain the fit parameters.In this case these are the coefficients of the polynomial.The polyOrder needs to be set or default of order 5 is assumed. 
  *
  * @param sp The image processor (ImageJ) for the image    
  * @param sel   An Roi object (ImageJ) that represents the area of interest (read on for the options and its meaning)
- * @param selPixels A boolean together with Roi defines specific cases as listed below:
  * @return It returns a float processor representing the image that is fit
  * 
  * Specific Cases: If sel is null false square/rectangle region of interest as such 

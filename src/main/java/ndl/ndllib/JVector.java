@@ -11,7 +11,7 @@ import java.util.Arrays;
 /**
  *
  * @author balam
- * @param <N>
+ * @param <N> is of the type Number
  */
 public class JVector<N extends Number> {
     

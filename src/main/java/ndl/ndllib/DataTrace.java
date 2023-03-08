@@ -208,8 +208,8 @@ private <X extends Number, Y extends Number> void setStat(X xData,Y yData){
   /**
    * Differentiate the trace data and return the float array. 
    * if Overwrite is true then the current data will be replaced by the differentiated data
-   * @param Overwrite
-   * @return 
+   * @param Overwrite type boolean set this to true to overwrite the current data with differentiated data
+   * @return returns the differentiated data 
    */
   public DataTrace differentiate(boolean Overwrite){
       DataTrace difData = new DataTrace();
