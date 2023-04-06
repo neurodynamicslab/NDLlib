@@ -19,7 +19,7 @@ import java.awt.Rectangle;
  *
  * @author balam
  */
-public class SurfaceFit {
+public final class SurfaceFit {
 
     /**
      * @return the preScale
@@ -126,32 +126,48 @@ public class SurfaceFit {
         this.setPolyOrderX(PolyX);
         this.setPolyOrderY(PolyY);
     }
+    public SurfaceFit( SurfaceFit fit){
+        GaussFilt = fit.GaussFilt;
+        OriginalX = fit.OriginalX;
+        OriginalY = fit.OriginalY;
+        
+        this.setGaussCtrX(fit.getGaussCtrX());
+        this.setGaussCtrY(fit.getGaussCtrY());
+        this.setGaussRad(fit.getGaussRad());
+        
+        this.setPreScale(fit.isPreScale());
+        this.setSelectPixels(fit.isSelectPixels());
+        this.setUseSelection(fit.isUseSelection());
+
+        this.setPolyOrderX(fit.getPolyOrderX());
+        this.setPolyOrderY(fit.getPolyOrderY());
+    }
     private double [][] gFit ;
     /**
      * @return the PolyOrderY
      */
-    public int getPolyOrderY() {
+    public synchronized int getPolyOrderY() {
         return PolyOrderY;
     }
 
     /**
      * @param PolyOrderY the PolyOrderY to set
      */
-    public void setPolyOrderY(int PolyOrderY) {
+    public synchronized void setPolyOrderY(int PolyOrderY) {
         this.PolyOrderY = PolyOrderY;
     }
 
     /**
      * @return the PolyOrderX
      */
-    public int getPolyOrderX() {
+    public synchronized int getPolyOrderX() {
         return PolyOrderX;
     }
 
     /**
      * @param PolyOrderX the PolyOrderX to set
      */
-    public void setPolyOrderX(int PolyOrderX) {
+    public synchronized void setPolyOrderX(int PolyOrderX) {
         this.PolyOrderX = PolyOrderX;
     }
     
