@@ -14,8 +14,8 @@
  * having the portion of their path that is different from the first entry.
  *
  */
-
-package NDL_JavaClassLib;
+package ndl.ndllib;
+//package NDL_JavaClassLib;
 
 import java.awt.event.ActionListener;
 import java.io.File;

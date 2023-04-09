@@ -8,8 +8,8 @@
  *
  * Created on Aug 16, 2010, 11:22:32 AM
  */
-
-package NDL_JavaClassLib;
+package ndl.ndllib;
+//package NDL_JavaClassLib;
 
 import java.awt.Frame;
 import java.awt.event.ActionListener;
