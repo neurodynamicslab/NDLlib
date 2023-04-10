@@ -206,7 +206,7 @@ public  double[][] FitSurfaceCoeff( double[][] TheImage )
     cnt = 0;
     double zVal;
     double sum =0;
-   // System.out.print("X_Order_: "+getPolyOrderX()+" Y Order : " + getPolyOrderY());
+   // System.out.print("X_Order_: "+getPolyOrderX()+" Y Order : " + getPolyOrderY());      
     for(r=0; r<Nrows; r++) {
         for(c=0; c<Ncols; c++) {
             
@@ -220,7 +220,7 @@ public  double[][] FitSurfaceCoeff( double[][] TheImage )
             }
         }
     }
-System.out.println("Number of non NaN is :"+cnt+" Out of: "+Nrows*Ncols);
+//System.out.println("Number of non NaN is :"+cnt+" Out of: "+Nrows*Ncols);
     // Notation:
     //  1)  The matrix [XY] is made up of sums (over all the pixels) of the
     //      row & column indices raised to various powers.  For example,
