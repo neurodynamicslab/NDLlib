@@ -12,28 +12,31 @@ import java.util.List;
 import java.util.function.Function;
 
 public class Tracker extends Thread {
-    protected String dataFileName;                           // Path to Video File
+    protected String dataFileName;                         // Path to Video File
     protected int[] fieldROI = new float[]{0, 0, 0, 0, 0}; // Roi of tracking; {Type, x1, y1, x2, y2}; Type:1->Rectangle, 2->Circle, 0->uninitialized
     protected int[] objectROI = new float[]{0, 0, 0, 0};   // Roi of object in current frame; Parameters same as above, excluding type;always rect
     protected int inclusionRadius = 0;                     // Radius within which the object must be in next frame
-    protected int fps;                                       // Frame per second of current
-    protected int startFrame, endFrame;
-    protected int[][] currFrame;
+    protected int fps;                                     // Frame per second of current
+    protected int startFrame, endFrame, currFrameNo;
+    protected Mat currFrame, bg;
     protected int[] threshold = new int[]{0, 0};
     protected TrackerEventHandler eventHandler;
     
-    protected List<Mat> contours = new ArrayList<>();
+    protected List<MatOfPoint> contours;
     public boolean tracking = false, playing = false;
     protected VideoCapture cap = null;
-    protected Mat bg = null, frame = null;
     protected String file_path;
     protected int[] lastLocation;
     protected boolean lastLocationSet = false;
+    protected boolean sleep = true;
+    protected List<Integer[]> path = new ArrayList<>();
     
-    protected
+    protected Mat gray, thresh, hierarchy, result;                 // To prevent creation of new variables at every frame
     
     static {
         nu.pattern.OpenCV.loadShared();
+        int RECTANGLE = 0;
+        int ELLIPSE = 1;
     }
     
     public Tracker(TrackerEventHandler eh) {
@@ -85,11 +88,11 @@ public class Tracker extends Thread {
         return pointsWithinRadius;
     }
 
-    public static Mat findNearestContour(Mat image, Point point) {
+    public static Mat findNearestContour(Mat image) {
         // Convert the image to grayscale and apply binary thresholding
-        Mat gray = new Mat();
+        gray = new Mat();
         Imgproc.cvtColor(image, gray, Imgproc.COLOR_BGR2GRAY);
-        Mat thresh = new Mat();
+        thresh = new Mat();
         int threshCode = Imgproc.THRESH_BINARY;
         if (this.threshold[1]-this.threshold[0] == 255) {
             threshCode+=Imgproc.THRESH_OTSU;
@@ -97,8 +100,8 @@ public class Tracker extends Thread {
         Imgproc.threshold(gray, thresh, this.threshold[0], this.threshold[1], 255, threshCode);
         
         // Find the contours in the thresholded image
-        ArrayList<MatOfPoint> contours = new ArrayList<>();
-        Mat hierarchy = new Mat();
+        contours = new ArrayList<>();
+        hierarchy = new Mat();
         Imgproc.findContours(thresh, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
         
         // Convert the point to an int array
@@ -118,11 +121,13 @@ public class Tracker extends Thread {
         if (nearestContourPoints.length == 0) {
             return image;
         }
-        int nearestContour = nearestContourPoints[0][0];
+        int nearestContour = nearestContourPoints[0];
         
         // Draw the nearest contour on a copy of the original image
-        Mat result = image.clone();
-        Imgproc.drawContours(result, contours, nearestContour, new Scalar(0, 255, 0), 2);
+        result = image.clone();
+        Imgproc.drawContours(result, nearestContour, -1, new Scalar(0, 255, 0), 2);
+        
+        this.path.add(nearestContour);
         
         return result;
     }
@@ -147,36 +152,35 @@ public class Tracker extends Thread {
     }
 
     private void track() {
+        currFrameNo = 0;
         if (cap==null) {
             throw new RuntimeException("Must call setDataFileName before tracking.");
         }
         double fps = cap.get(5);
         double spf = 1 / fps;
         boolean cont = true;
-        frame = nextFrame();
-        while (cap.isOpened()) {
-            if (frame == null) break;
+        while (cap.isOpened() && nextFrame()) {
+            currFrameNo++;
+            if (currFrame == null) break;
             cont = this.eventHandler.loopCall(frame, cont);
             try {
-                Thread.sleep((long) (spf));
+                if (this.sleep) Thread.sleep((long) (spf));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             if (!cont) continue;
-            frame = nextFrame();
+            if (!nextFrame()) break;
         }
         cap.release();
     }
 
-    private Mat nextFrame() {
-        Mat frame = new Mat();
-        boolean ret = cap.read(frame);
-        if (!ret) return null;
-        if (fframe == null) fframe = frame.clone();
-        Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.resize(frame, frame, new Size(frame.cols() / 2, frame.rows() / 2));
-        if (tracking) frame = findNearestContour(frame);
-        return frame;
+    private synchronized boolean nextFrame() {
+        currFrame = new Mat();
+        boolean ret = cap.read(currFrame);
+        if (!ret) return false;
+        if (fframe == null) fframe = currFrame.clone();
+        if (tracking) currFrame = findNearestContour(currFrame);
+        return true;
     }
     
     public void run() {
@@ -186,7 +190,7 @@ public class Tracker extends Thread {
    /* -------------------------------------Getters and Setters-----------------------------------------------*/
     
    public synchronized void setBackgroundFrame() {
-       this.bg = this.frame;
+       this.bg = this.currFrame;
    }
    
    public synchronized DataTrace getPath() {}
@@ -234,12 +238,12 @@ public class Tracker extends Thread {
        this.inclusionRadius = ir;
    }
    
-   public synchronized float getFPS() {
+   public synchronized int getFPS() {
        return this.fps;
    }
    
-   public synchronized float[] getFrameRange() {
-       return new float[]{this.startFrame, this.endFrame};
+   public synchronized int[] getFrameRange() {
+       return new int[]{this.startFrame, this.endFrame};
    }
    
    public synchronized void setStartFrame(int frame) {
@@ -253,6 +257,14 @@ public class Tracker extends Thread {
    public synchronized void setThresholding(int low, int high) {
        this.threshold[0] = low;
        this.threshold[1] = high;
+   }
+   
+   public synchronized void setGoAtVideoPace(boolean shouldWait) {
+       this.sleep = shouldWait;
+   }
+   
+   public synchronized void getGoAtVideoPace() {
+       return this.sleep;
    }
    
    public static interface TrackerEventHandler {
