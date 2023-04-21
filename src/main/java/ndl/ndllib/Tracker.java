@@ -13,11 +13,12 @@ import java.util.List;
 
 public class Tracker extends Thread {
     protected String dataFileName;                         // Path to Video File
+    // Note: for now, only implements rectangle and takes this as shape
     protected int[] fieldROI = new int[]{0, 0, 0, 0, 0}; // Roi of tracking; {Type, x1, y1, x2, y2}; Type:1->Rectangle, 2->Circle, 0->uninitialized
     protected int[] objectROI = new int[]{0, 0, 0, 0};   // Roi of object in current frame; Parameters same as above, excluding type;always rect
     protected int inclusionRadius = 0;                     // Radius within which the object must be in next frame
     protected int fps;                                     // Frame per second of current
-    protected int startFrame, endFrame, currFrameNo;
+    protected int startFrame=0, endFrame=1800, currFrameNo;
     protected Mat currFrame, bg;
     protected int[] threshold = new int[]{0, 0};
     protected TrackerEventHandler eventHandler;
@@ -38,11 +39,24 @@ public class Tracker extends Thread {
         int RECTANGLE = 0;
         int ELLIPSE = 1;
     }
-    
+
+    /**
+     * Default Initializer
+     * @param eh a class that implements TrackerEventHandler interface (Member of this class)
+     */
     public Tracker(TrackerEventHandler eh) {
         this.eventHandler = eh;
     }
-    
+
+    /**
+     * Static function that computes which of the points are within the given radius from a point.
+     * @param point The point from which the distance of al other points, given in second argument, is checked. Format: {x, y}
+     * @param points An array containing list of points to be checked. Same format as point argument.
+     * @param inclusionRadius Maximum distance from param point.
+     * @return Returns an array of points from param points which closer than inclusion radius from point.
+     * Format of return: {Index in points arg, distance from given point, x-coord of point, y-coord of point}.
+     * Return in ascending order of distance from point (Closest to Farthest)
+     */
     public static int[][] findPointsWithinRadius(int[] point, int[][] points, int inclusionRadius) {
         // Create an array to hold the distances between each point and the given point
         double[] distances = new double[points.length];
@@ -77,8 +91,15 @@ public class Tracker extends Thread {
         return pointsWithinRadius;
     }
 
+    /**
+     * Finds the nearest contour to the position in the previous frame and asserts it as the position in current frame
+     * @param image The current image of the video, to be tracked.
+     * @return Returns the given image, cropped to field ROI(SEE: setFieldROI()), with the nearest contour drawn on it.
+     */
     public Mat findNearestContour(Mat image) {
         // Convert the image to grayscale and apply binary thresholding
+        Rect rectCrop = new Rect(fieldROI[0], fieldROI[1], fieldROI[2]-fieldROI[0],fieldROI[3]-fieldROI[1]);
+        image = new Mat(image, rectCrop);
         gray = new Mat();
         Imgproc.cvtColor(image, gray, Imgproc.COLOR_BGR2GRAY);
         thresh = new Mat();
@@ -139,7 +160,7 @@ public class Tracker extends Thread {
     }*/
 
     private void track() {
-        currFrameNo = 0;
+        currFrameNo = 1;
         if (cap==null) {
             throw new RuntimeException("Must call setDataFileName before tracking.");
         }
@@ -147,16 +168,18 @@ public class Tracker extends Thread {
         double spf = 1 / fps;
         boolean cont = true;
         while (cap.isOpened() && nextFrame()) {
-            currFrameNo++;
             if (currFrame == null) break;
-            cont = this.eventHandler.loopCall(currFrame, cont);
-            try {
-                if (this.sleep) Thread.sleep((long) (spf));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if ((currFrameNo<startFrame)||(currFrameNo>endFrame)) {
+                cont = this.eventHandler.loopCall(currFrame, cont);
+                try {
+                    if (this.sleep) Thread.sleep((long) (spf));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             if (!cont) continue;
             if (!nextFrame()) break;
+            currFrameNo++;
         }
         cap.release();
     }
@@ -174,11 +197,17 @@ public class Tracker extends Thread {
     }
    
    /* -------------------------------------Getters and Setters-----------------------------------------------*/
-    
+
+    /**
+     * Sets the current frame as background frame.
+     */
    public synchronized void setBackgroundFrame() {
        this.bg = this.currFrame;
    }
-   
+
+    /**
+     * @return Returns a DataTrace Object, containing data about the path which was tracked in the video.
+     */
    public synchronized DataTrace_ver_3 getPath() {
        DataTrace_ver_3 dt = new DataTrace_ver_3();
        for (int[] point: this.path) {
@@ -186,10 +215,17 @@ public class Tracker extends Thread {
        }
        return dt;
    }
-   
+
+    /**
+     * Setter for the start location.
+     * @param location First location of the mouse (on the starting frame).
+     * @return Returns whether it succeeded or not. Return True if start location has not been set before;else false;
+     * (The function fails if start location has been set before)
+     */
    public synchronized boolean setStartLocation(int[] location) {
        if (this.lastLocationSet) return false;
        this.lastLocation = location;
+       this.path.add(new int[]{0, 0, location[0], location[1]});
        this.lastLocationSet = true;
        return true;
    }
@@ -197,19 +233,38 @@ public class Tracker extends Thread {
    // Getters and setters for fields
    // Some Setters may not be seen
    // This is intentional, as they should not be changed after initialisation
+
+    /**
+     * Set the path to the video to be tracked.
+     * Must always be called before start()
+     * If called after start() also, then the class assumes that it has to continue tracking onto the next video.
+     * @param fileName
+     */
    public synchronized void setDataFileName(String fileName) {
        this.dataFileName = fileName;
        cap = new VideoCapture(file_path);
    }
-   
+
+    /**
+     * @return Return the path to the video file it is currently tracking.
+     */
    public synchronized String getDataFileName() {
        return dataFileName;
    }
-   
+
+    /**
+     * SEE ALSO: SetFiledROI()
+     * @return Returns the ROI of tracking.
+     */
    public synchronized int[] getFieldROI() {
        return this.fieldROI;
    }
-   
+
+    /**
+     * Sets the Roi to be tracked
+     * @param ROI region of interest to be tracked in the format: {0, x, y, x1, y1}, where x is left coordinate, y is top coordinate,
+     *            x1 is right coordinate and y1 is bottom coordinate.
+     */
    public synchronized void setFieldROI(int[] ROI) {
        this.fieldROI = ROI;
    }
@@ -221,45 +276,93 @@ public class Tracker extends Thread {
    private synchronized void setObjectROI(int[] ROI) {
        this.objectROI = ROI;
    }*/
-   
+
+    /**
+     * SEE: setInclusionRadius
+     * @return Inclusion radius
+     */
    public synchronized int getInclusionRadius() {
        return this.inclusionRadius;
    }
-   
+
+    /**
+     * Set the inclusion radius. The mouse(centroid) on the next frame must be within the inclusion radius.
+     * @param ir The Inclusion radius.
+     */
    public synchronized void setInclusionRadius(int ir) {
        this.inclusionRadius = ir;
    }
-   
+
+    /**
+     * @return FPS of current video.
+     */
    public synchronized int getFPS() {
        return this.fps;
    }
-   
+
+    /**
+     * SEE: setStartFrame(), setEndFrame()
+     * @return An int[] array of format [startFrame, endFrame]
+     */
    public synchronized int[] getFrameRange() {
        return new int[]{this.startFrame, this.endFrame};
    }
-   
+
+    /**
+     * Sets the starting frame (Relative to the first video) of tracking;
+     * Frames before this are not tracked
+     * @param frame the starting frame Number.
+     */
    public synchronized void setStartFrame(int frame) {
        this.startFrame = frame;
    }
-   
+
+    /**
+     * Sets the Ending frame (Relative to the first video) of tracking;
+     * Frame after this are not tracked
+     * @param frame
+     */
    public synchronized void setEndFrame(int frame) {
        this.endFrame = frame;
    }
-   
+
+    /**
+     * Set the thresholding limit of the tracker; Either mouse or surrounding must be within this threshold;
+     * Cannot Have both mouse and surrounding or neither mouse nor surrounding.
+     * @param low Lower Thresholding limit
+     * @param high Upper Thresholding limit
+     */
    public synchronized void setThresholding(int low, int high) {
        this.threshold[0] = low;
        this.threshold[1] = high;
    }
-   
+
+    /**
+     * Set whether the tracking should pause at every frame, at the same rate as an actual video, or
+     * track as fast as possible
+     * @param shouldWait Whether the program should wait at every frame
+     */
    public synchronized void setGoAtVideoPace(boolean shouldWait) {
        this.sleep = shouldWait;
    }
-   
+
+    /**
+     * @return SEE: setGoAtVideoPace()
+     */
    public synchronized boolean getGoAtVideoPace() {
        return this.sleep;
    }
-   
+
+    /**
+     * An Interface to handle image at every looping, while allowing the code to run in a separate thread.
+     */
    public interface TrackerEventHandler {
+        /**
+         * Called every time the video moves through a frame.
+         * @param im The image after cropping to fieldROI(See setFieldROI()) and drawing the contour nearest to the previous location.
+         * @param playing Whether the code is going through the video or has paused.
+         * @return Whether the code should continue going through the video or not.
+         */
         boolean loopCall(Mat im, boolean playing);
    }
 }
