@@ -1,20 +1,20 @@
 package ndl.ndllib;
 
 import org.opencv.core.*;
-import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Moments;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.imgproc.Imgproc;
 
 import java.lang.Thread;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
 
 public class Tracker extends Thread {
     protected String dataFileName;                         // Path to Video File
-    protected int[] fieldROI = new float[]{0, 0, 0, 0, 0}; // Roi of tracking; {Type, x1, y1, x2, y2}; Type:1->Rectangle, 2->Circle, 0->uninitialized
-    protected int[] objectROI = new float[]{0, 0, 0, 0};   // Roi of object in current frame; Parameters same as above, excluding type;always rect
+    protected int[] fieldROI = new int[]{0, 0, 0, 0, 0}; // Roi of tracking; {Type, x1, y1, x2, y2}; Type:1->Rectangle, 2->Circle, 0->uninitialized
+    protected int[] objectROI = new int[]{0, 0, 0, 0};   // Roi of object in current frame; Parameters same as above, excluding type;always rect
     protected int inclusionRadius = 0;                     // Radius within which the object must be in next frame
     protected int fps;                                     // Frame per second of current
     protected int startFrame, endFrame, currFrameNo;
@@ -23,13 +23,13 @@ public class Tracker extends Thread {
     protected TrackerEventHandler eventHandler;
     
     protected List<MatOfPoint> contours;
-    public boolean tracking = false, playing = false;
+    public boolean tracking = false;
     protected VideoCapture cap = null;
     protected String file_path;
     protected int[] lastLocation;
     protected boolean lastLocationSet = false;
     protected boolean sleep = true;
-    protected List<Integer[]> path = new ArrayList<>();
+    protected List<int[]> path = new ArrayList<>();
     
     protected Mat gray, thresh, hierarchy, result;                 // To prevent creation of new variables at every frame
     
@@ -40,7 +40,6 @@ public class Tracker extends Thread {
     }
     
     public Tracker(TrackerEventHandler eh) {
-        this.file_path = file_path;
         this.eventHandler = eh;
     }
     
@@ -58,17 +57,7 @@ public class Tracker extends Thread {
             pointIndices[i][0] = i;
             pointIndices[i][1] = distances[i] <= inclusionRadius ? 1 : 0;
         }
-        Arrays.sort(pointIndices, new Comparator<int[]>() {
-            public int compare(int[] a, int[] b) {
-                if (distances[a[0]] < distances[b[0]]) {
-                    return -1;
-                } else if (distances[a[0]] > distances[b[0]]) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }
-        });
+        Arrays.sort(pointIndices, Comparator.comparingDouble(a -> distances[a[0]]));
         
         // Create an array of the points and their indices within the inclusion radius
         int numPointsWithinRadius = 0;
@@ -77,18 +66,18 @@ public class Tracker extends Thread {
                 numPointsWithinRadius++;
             }
         }
-        int[][] pointsWithinRadius = new int[numPointsWithinRadius][2];
+        int[][] pointsWithinRadius = new int[numPointsWithinRadius][4];
         int j = 0;
         for (int i = 0; i < points.length; i++) {
             if (pointIndices[i][1] == 1) {
-                pointsWithinRadius[j++] = points[pointIndices[i][0]];
+                pointsWithinRadius[j++] = new int[]{pointIndices[i][0], pointIndices[i][1], points[pointIndices[i][0]][0], points[pointIndices[i][0]][1]};
             }
         }
         
         return pointsWithinRadius;
     }
 
-    public static Mat findNearestContour(Mat image) {
+    public Mat findNearestContour(Mat image) {
         // Convert the image to grayscale and apply binary thresholding
         gray = new Mat();
         Imgproc.cvtColor(image, gray, Imgproc.COLOR_BGR2GRAY);
@@ -97,7 +86,7 @@ public class Tracker extends Thread {
         if (this.threshold[1]-this.threshold[0] == 255) {
             threshCode+=Imgproc.THRESH_OTSU;
         }
-        Imgproc.threshold(gray, thresh, this.threshold[0], this.threshold[1], 255, threshCode);
+        Imgproc.threshold(gray, thresh, this.threshold[0], this.threshold[1], threshCode);
         
         // Find the contours in the thresholded image
         contours = new ArrayList<>();
@@ -105,7 +94,7 @@ public class Tracker extends Thread {
         Imgproc.findContours(thresh, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
         
         // Convert the point to an int array
-        int[] pointArray = {(int)point.x, (int)point.y};
+        int[] pointArray = {this.path.get(path.size()-1)[2], this.path.get(path.size()-1)[3]};
         
         // Find the nearest contour to the given point
         int[][] contourPoints = new int[contours.size()][2];
@@ -121,19 +110,17 @@ public class Tracker extends Thread {
         if (nearestContourPoints.length == 0) {
             return image;
         }
-        int nearestContour = nearestContourPoints[0];
+        int nearestContourIndex = nearestContourPoints[0][0];
         
         // Draw the nearest contour on a copy of the original image
         result = image.clone();
-        Imgproc.drawContours(result, nearestContour, -1, new Scalar(0, 255, 0), 2);
+        Imgproc.drawContours(result, contours, nearestContourIndex, new Scalar(0, 255, 0), 2);
         
-        this.path.add(nearestContour);
+        this.path.add(nearestContourPoints[0]);
         
         return result;
     }
-
-
-    private Mat generateContours(Mat image) {
+    /*private Mat generateContours(Mat image) {
         if (this.bg==null) return null;
         Mat gray = new Mat();
         Imgproc.cvtColor(image, gray, Imgproc.COLOR_BGR2GRAY);
@@ -149,7 +136,7 @@ public class Tracker extends Thread {
             Imgproc.circle(output, center, radius, new Scalar(255, 255, 255), 2);
         }
         return output;
-    }
+    }*/
 
     private void track() {
         currFrameNo = 0;
@@ -162,7 +149,7 @@ public class Tracker extends Thread {
         while (cap.isOpened() && nextFrame()) {
             currFrameNo++;
             if (currFrame == null) break;
-            cont = this.eventHandler.loopCall(frame, cont);
+            cont = this.eventHandler.loopCall(currFrame, cont);
             try {
                 if (this.sleep) Thread.sleep((long) (spf));
             } catch (InterruptedException e) {
@@ -178,7 +165,6 @@ public class Tracker extends Thread {
         currFrame = new Mat();
         boolean ret = cap.read(currFrame);
         if (!ret) return false;
-        if (fframe == null) fframe = currFrame.clone();
         if (tracking) currFrame = findNearestContour(currFrame);
         return true;
     }
@@ -193,9 +179,15 @@ public class Tracker extends Thread {
        this.bg = this.currFrame;
    }
    
-   public synchronized DataTrace getPath() {}
+   public synchronized DataTrace_ver_3 getPath() {
+       DataTrace_ver_3 dt = new DataTrace_ver_3();
+       for (int[] point: this.path) {
+           dt.addData(point[2], point[3]);
+       }
+       return dt;
+   }
    
-   public synchronized boolean setStartLocation(float[] location) {
+   public synchronized boolean setStartLocation(int[] location) {
        if (this.lastLocationSet) return false;
        this.lastLocation = location;
        this.lastLocationSet = true;
@@ -222,19 +214,19 @@ public class Tracker extends Thread {
        this.fieldROI = ROI;
    }
    
-   public synchronized int[] getObjectROI() {
+   /*public synchronized int[] getObjectROI() {
        return this.objectROI;
    }
    
    private synchronized void setObjectROI(int[] ROI) {
        this.objectROI = ROI;
-   }
+   }*/
    
-   public synchronized int getInclusuionRadius() {
+   public synchronized int getInclusionRadius() {
        return this.inclusionRadius;
    }
    
-   public synchronized void setInclusuionRadius(int ir) {
+   public synchronized void setInclusionRadius(int ir) {
        this.inclusionRadius = ir;
    }
    
@@ -263,11 +255,11 @@ public class Tracker extends Thread {
        this.sleep = shouldWait;
    }
    
-   public synchronized void getGoAtVideoPace() {
+   public synchronized boolean getGoAtVideoPace() {
        return this.sleep;
    }
    
-   public static interface TrackerEventHandler {
+   public interface TrackerEventHandler {
         boolean loopCall(Mat im, boolean playing);
    }
 }
