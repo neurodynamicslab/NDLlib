@@ -46,7 +46,7 @@ public class MultiFileDialog extends javax.swing.JDialog {
             }
          
         initComponents();
-        this.FileSelDialog.setCurrentDirectory(startDirectory);
+        //this.FileSelDialog.setCurrentDirectory(startDirectory);
         //this.setVisible(true);
         FileList.setModel(FileListData);
     }
@@ -72,7 +72,6 @@ public class MultiFileDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Select Multiple Files in different directories");
         setAlwaysOnTop(true);
-        setLocationByPlatform(true);
 
         FileList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -88,6 +87,7 @@ public class MultiFileDialog extends javax.swing.JDialog {
 
         FileSelDialog.setControlButtonsAreShown(false);
         FileSelDialog.setMultiSelectionEnabled(true);
+        FileSelDialog.setCurrentDirectory(this.getStartDirectory());
         FileSelDialog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 FileSelDialogActionPerformed(evt);

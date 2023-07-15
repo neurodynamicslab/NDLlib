@@ -107,6 +107,9 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="FileSelDialogActionPerformed"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="FileSelDialog.setCurrentDirectory(this.getStartDirectory());"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JButton" name="AddButton">
       <Properties>
