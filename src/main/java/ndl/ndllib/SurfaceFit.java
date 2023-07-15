@@ -205,7 +205,7 @@ public  double[][] FitSurfaceCoeff( double[][] TheImage )
     double []Z = new double[Npixels];
     cnt = 0;
     double zVal;
-    double sum =0;
+    double sum = 0;
    // System.out.print("X_Order_: "+getPolyOrderX()+" Y Order : " + getPolyOrderY());      
     for(r=0; r<Nrows; r++) {
         for(c=0; c<Ncols; c++) {
@@ -215,6 +215,11 @@ public  double[][] FitSurfaceCoeff( double[][] TheImage )
                 X[cnt] = c;
                 Y[cnt] = r;
                 Z[cnt] = zVal;
+                /*
+                    Check here if the col has enough data points otherwise ignore the col
+                    increment the cnt counter and add to sum only if the no of data points condition is satisfied.
+                
+                */
                 cnt++;
                 sum += zVal;
             }

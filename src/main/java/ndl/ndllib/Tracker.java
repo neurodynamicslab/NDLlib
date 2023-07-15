@@ -5,7 +5,7 @@ import org.opencv.imgproc.Moments;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.imgproc.Imgproc;
 
-import java.lang.Thread;
+//import java.lang.Thread;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Comparator;
