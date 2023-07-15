@@ -7,11 +7,12 @@
  * MultiFileDialog.java
  *
  * Created on Aug 16, 2010, 11:22:32 AM
+ * 15th July 2023: Added start directory field: Now when the dialog is made visible it will be showing the 
+ * contents of the start directory if one is mentioned, valid and available. 
  */
 package ndl.ndllib;
 //package NDL_JavaClassLib;
 
-import java.awt.Frame;
 import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.*;
@@ -30,6 +31,7 @@ public class MultiFileDialog extends javax.swing.JDialog {
     private final int SUCCESS = 2;
     private final int CLOSE = -1;
     private final int error = -2;
+    private File startDirectory = null;
     
     /** Creates new form MultiFileDialog
      * @param parent
@@ -42,7 +44,9 @@ public class MultiFileDialog extends javax.swing.JDialog {
             } catch(Exception e) {
               System.out.println("Error setting native LAF: " + e);
             }
+         
         initComponents();
+        this.FileSelDialog.setCurrentDirectory(startDirectory);
         //this.setVisible(true);
         FileList.setModel(FileListData);
     }
@@ -315,5 +319,19 @@ public String  setCloseAction(ActionListener Instance, String Cmd){
      */
     public int getResult() {
         return result;
+    }
+
+    /**
+     * @return the startDirectory
+     */
+    public File getStartDirectory() {
+        return startDirectory;
+    }
+
+    /**
+     * @param startDirectory the startDirectory to set
+     */
+    public void setStartDirectory(File startDirectory) {
+        this.startDirectory = startDirectory;
     }
 }
