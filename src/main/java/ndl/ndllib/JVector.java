@@ -204,12 +204,14 @@ public class JVector<N extends Number> {
         double unitsRange =  maxUnits - minUnits ;
         int compIdx = 0;
         double maxC,minC,currC;
-        for(Number N : Components){
+        
+        maxC = max.getComponent(compIdx).doubleValue();
+        minC = min.getComponent(compIdx).doubleValue();
             
-            maxC = max.getComponent(compIdx).doubleValue();
-            minC = min.getComponent(compIdx).doubleValue();
-            
-            var unit = unitsRange/(maxC - minC);
+        var unit = unitsRange/(maxC - minC);
+        
+        for(Number N : Components){   
+        
             currC = (N.doubleValue()- minC)*unit + minUnits;
             calibComp.add(compIdx,currC);
             
