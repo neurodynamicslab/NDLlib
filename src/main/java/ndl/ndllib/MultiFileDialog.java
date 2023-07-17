@@ -31,24 +31,35 @@ public class MultiFileDialog extends javax.swing.JDialog {
     private final int SUCCESS = 2;
     private final int CLOSE = -1;
     private final int error = -2;
-    private File startDirectory = null;
+    private File startDirectory;
     
     /** Creates new form MultiFileDialog
      * @param parent
      * @param modal
+     * @param startLocation
      */
-    public MultiFileDialog(java.awt.Frame parent, boolean modal) {
+    public MultiFileDialog(java.awt.Frame parent, boolean modal,File startLocation) {
         super(parent, modal);
          try {
               UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch(Exception e) {
               System.out.println("Error setting native LAF: " + e);
             }
-         
+       // System.out.print(startLocation.getAbsolutePath()+"\tIs it a directory"+startLocation.isDirectory()+ "\n");
+        this.setStartDirectory(startLocation);
         initComponents();
+       // this.FileSelDialog = new JFileChooser();
         //this.FileSelDialog.setCurrentDirectory(startDirectory);
         //this.setVisible(true);
         FileList.setModel(FileListData);
+    }
+    /**
+     * Overloaded Constructor
+     * @param parent
+     * @param modal 
+     */
+    public MultiFileDialog(java.awt.Frame parent,boolean modal){
+        this(parent,modal,null);
     }
 
     /** This method is called from within the constructor to
@@ -85,9 +96,9 @@ public class MultiFileDialog extends javax.swing.JDialog {
         });
         jScrollPane1.setViewportView(FileList);
 
+        FileSelDialog.setCurrentDirectory(this.getStartDirectory());
         FileSelDialog.setControlButtonsAreShown(false);
         FileSelDialog.setMultiSelectionEnabled(true);
-        FileSelDialog.setCurrentDirectory(this.getStartDirectory());
         FileSelDialog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 FileSelDialogActionPerformed(evt);
