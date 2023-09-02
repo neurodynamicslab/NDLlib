@@ -22,6 +22,50 @@ import java.awt.Rectangle;
 public final class SurfaceFit {
 
     /**
+     * @return the assymGauss
+     */
+    public boolean isAssymGauss() {
+        return assymGauss;
+    }
+
+    /**
+     * @param assymGauss the assymGauss to set
+     */
+    public void setAssymGauss(boolean assymGauss) {
+        this.assymGauss = assymGauss;
+    }
+
+    private boolean assymGauss;
+
+    /**
+     * @return the GaussRadX
+     */
+    public double getGaussRadX() {
+        return GaussRadX;
+    }
+
+    /**
+     * @param RadX the GaussRadX to set
+     */
+    public void setRadX(double RadX) {
+        this.GaussRadX = RadX;
+    }
+
+    /**
+     * @return the GaussRadY
+     */
+    public double getGaussRadY() {
+        return GaussRadY;
+    }
+
+    /**
+     * @param RadY the GaussRadY to set
+     */
+    public void setRadY(double RadY) {
+        this.GaussRadY = RadY;
+    }
+
+    /**
      * @return the preScale
      */
     public boolean isPreScale() {
@@ -184,6 +228,8 @@ public final class SurfaceFit {
     private Integer   gaussCtrX = null;
     private Integer  gaussCtrY = null;
     private double  gaussRad = 1.0;
+    private double GaussRadX = 1.0;
+    private double GaussRadY = 1.0;
     
     private int OriginalX;
     private int OriginalY;
@@ -554,11 +600,21 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
     }
 
     private ImageProcessor gaussSmooth(ImageProcessor sp, Roi sel) {
+        if(isAssymGauss())
+            gaussSmooth(sp,sel,this.getGaussRadX(),this.getGaussRadY());
         ImageProcessor ip = sp.duplicate();
         if(sel != null)
             sp.setRoi(sel);
         GaussianBlur gBlur = new GaussianBlur();
         gBlur.blurGaussian(ip, this.getGaussRad());
+        return ip;
+    }
+    private ImageProcessor gaussSmooth(ImageProcessor sp, Roi sel, double sigmaX, double sigmaY){
+        ImageProcessor ip = sp.duplicate();
+        if(sel != null)
+            sp.setRoi(sel);
+        GaussianBlur gBlur = new GaussianBlur();
+        gBlur.blurGaussian(ip, this.getGaussRadX(),this.getGaussRadY(), 0.02);
         return ip;
     }
 

@@ -72,7 +72,11 @@ class OrdXYData_1<X extends Number, Y extends Number> extends Object{
         return serialNo;
     }
 }
-
+/**
+ * This abstracts the tabular XY data with serial no. 
+ * Essentially it is collection of the OrdXYData.
+ * @author balaji
+ */
 public class DataTrace extends Object{
     
       

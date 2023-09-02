@@ -6,7 +6,9 @@ import java.util.ArrayList;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
+//To DO: update to include scaling of data after correcting for an offset.
+//Transfer the comments and javadoc info from data trace for OrdXYdata. 
+//comment out the OrdXYData from Datatrace.
 /**
  *
  * @author balam
