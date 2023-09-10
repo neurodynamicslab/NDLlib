@@ -239,8 +239,7 @@ public  double[][] FitSurfaceCoeff( double[][] TheImage )
     int Nrows = TheImage.length;
     int Ncols = TheImage[0].length;
     int Npixels = Nrows*Ncols;
-    int n=0;
-    int r, c, cnt, i, j, k, MatVal, nCol;
+    int r, c, cnt, i, j, k, nCol;
     int Dim1, Dim2;
     int PO_2xp1 = Math.max((2 * getPolyOrderX() + 1), (2 * getPolyOrderY() + 1));
     int MatSize = (getPolyOrderX()+1)*(getPolyOrderY()+1);
@@ -251,7 +250,6 @@ public  double[][] FitSurfaceCoeff( double[][] TheImage )
     double []Z = new double[Npixels];
     cnt = 0;
     double zVal;
-    double sum = 0;
    // System.out.print("X_Order_: "+getPolyOrderX()+" Y Order : " + getPolyOrderY());      
     for(r=0; r<Nrows; r++) {
         for(c=0; c<Ncols; c++) {
@@ -267,10 +265,13 @@ public  double[][] FitSurfaceCoeff( double[][] TheImage )
                 
                 */
                 cnt++;
-                sum += zVal;
             }
         }
     }
+    /**
+     * Check if the cnt > the number of free parameters (degrees of freedom) of a polynomial surface. If not 
+     * do not consider this data set.
+     */
 //System.out.println("Number of non NaN is :"+cnt+" Out of: "+Nrows*Ncols);
     // Notation:
     //  1)  The matrix [XY] is made up of sums (over all the pixels) of the
@@ -438,18 +439,15 @@ public  double[][] FitSurfaceCoeff( double[][] TheImage )
 public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
     double mean ;
     ImageProcessor ip = sp;// = (this.isPreScale())? scale(sp): sp.convertToFloatProcessor();
-    if(isPreScale()){
-        
+    if(isPreScale()){       
         ip = scale(sp);
         sel = scaleRoi(sel); 
-        
         //ip.setRoi(sel);
     }
     ip = (this.isGaussFilt())?gaussSmooth(ip,sel): ip;
     var fp = new FloatStatistics(ip);
     mean = fp.mean;
     var orgMean = mean;
-    int width = ip.getWidth(), height  = ip.getHeight();
     int rx, ry, rw, rh;
     byte[] maskData = null; 
     double selVal = 0;
@@ -466,7 +464,7 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
         maskData = ip.getMaskArray();//(byte [])sel.getMask().getPixels();
         selVal = (this.isSelectPixels())? Double.NaN : 0;   //roi is provided but unsampled space inside the rect sele is filled with 0
     }else{                                   //selection is not provided by the user
-                
+              
         Rectangle rectRoi = ip.getRoi();  
         rx = rectRoi.x;
         ry = rectRoi.y;
@@ -502,7 +500,7 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
                     surface[my][mx] = (double)ip.getPixelValue(col, row);//(maskData == null || maskData[midx++] != 0) ?(double) ip.getPixelValue(col,row): unSelval;      
             }
         }
-        System.out.println("Pixel level selection is off: The dimensions are (X x Y) " + surface[0].length + " , "+ surface.length);
+      //  System.out.println("Pixel level selection is off: The dimensions are (X x Y) " + surface[0].length + " , "+ surface.length);
     }else{
        // int maskPixCounter = 0;
         for(int row = ry, my = 0 ; row < ry+rh ; my++, row++){
@@ -601,7 +599,7 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
 
     private ImageProcessor gaussSmooth(ImageProcessor sp, Roi sel) {
         if(isAssymGauss())
-            gaussSmooth(sp,sel,this.getGaussRadX(),this.getGaussRadY());
+            gaussSmooth(sp,sel,0.02);
         ImageProcessor ip = sp.duplicate();
         if(sel != null)
             sp.setRoi(sel);
@@ -609,12 +607,14 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
         gBlur.blurGaussian(ip, this.getGaussRad());
         return ip;
     }
-    private ImageProcessor gaussSmooth(ImageProcessor sp, Roi sel, double sigmaX, double sigmaY){
+    private ImageProcessor gaussSmooth(ImageProcessor sp, Roi sel, double acc){
+        if( acc >= 1)
+            acc = 0.02;
         ImageProcessor ip = sp.duplicate();
         if(sel != null)
             sp.setRoi(sel);
         GaussianBlur gBlur = new GaussianBlur();
-        gBlur.blurGaussian(ip, this.getGaussRadX(),this.getGaussRadY(), 0.02);
+        gBlur.blurGaussian(ip, this.getGaussRadX(),this.getGaussRadY(),acc);
         return ip;
     }
 
