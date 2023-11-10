@@ -463,7 +463,11 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
         ry = bRect.y;
         rw = bRect.width;
         rh = bRect.height;
-        maskData = ip.getMaskArray();//(byte [])sel.getMask().getPixels();
+        if(isGaussFilt()){
+            ImageProcessor filteredIP = gaussSmooth(ip.getMask(),sel);
+            maskData = filteredIP.getMaskArray();   
+        }else
+            maskData = ip.getMaskArray();//(byte [])sel.getMask().getPixels();
         selVal = (this.isSelectPixels())? Double.NaN : 0;   //roi is provided but unsampled space inside the rect sele is filled with 0
     }else{                                   //selection is not provided by the user
                 
