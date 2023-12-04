@@ -5,8 +5,10 @@ package ndl.ndllib;
 import Jama.Matrix;
 import ij.ImagePlus;
 import ij.gui.Roi;
+import ij.gui.ShapeRoi;
 import ij.plugin.RoiScaler;
 import ij.plugin.filter.GaussianBlur;
+import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
 import ij.process.FloatStatistics;
 import ij.process.ImageProcessor;
@@ -462,8 +464,18 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
         rw = bRect.width;
         rh = bRect.height;
         if(isGaussFilt()){
-            ImageProcessor filteredIP = gaussSmooth(ip.getMask(),sel);
-            maskData = filteredIP.getMaskArray();   
+            //ip.setRoi(sel);
+            
+            if (sel.getType() == Roi.RECTANGLE){
+                //javax.swing.JOptionPane.showMessageDialog(null, "Error expanding the ROI selection proceeding with no expansion");
+                System.out.println("Error expanding the ROI selection proceeding with no expansion");
+                maskData = ip.createMask().getMaskArray();
+                //ImageProcessor tmpProcessor = new ByteProcessor(maskData);
+            }
+            else{
+                ImageProcessor filteredIP = gaussSmooth(ip.createMask(),sel);
+                maskData = filteredIP.getMaskArray();   
+            }
         }else
             maskData = ip.getMaskArray();//(byte [])sel.getMask().getPixels();
         selVal = (this.isSelectPixels())? Double.NaN : 0;   //roi is provided but unsampled space inside the rect sele is filled with 0
@@ -605,8 +617,10 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
         if(isAssymGauss())
             gaussSmooth(sp,sel,0.02);
         ImageProcessor ip = sp.duplicate();
-        if(sel != null)
-            sp.setRoi(sel);
+        if(sel != null){
+            ShapeRoi sr = new ShapeRoi(sel);
+            sp.setRoi(sr);
+        }
         GaussianBlur gBlur = new GaussianBlur();
         gBlur.blurGaussian(ip, this.getGaussRad());
         return ip;
