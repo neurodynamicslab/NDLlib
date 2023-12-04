@@ -469,11 +469,13 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
             if (sel.getType() == Roi.RECTANGLE){
                 //javax.swing.JOptionPane.showMessageDialog(null, "Error expanding the ROI selection proceeding with no expansion");
                 System.out.println("Error expanding the ROI selection proceeding with no expansion");
-                maskData = ip.createMask().getMaskArray();
+                maskData = ip.getMaskArray();
                 //ImageProcessor tmpProcessor = new ByteProcessor(maskData);
             }
             else{
-                ImageProcessor filteredIP = gaussSmooth(ip.createMask(),sel);
+                System.out.println("It is not a rectanular ROI: Proceeding to get the mask");
+                ByteProcessor mask = ip.convertToByteProcessor();
+                ImageProcessor filteredIP = gaussSmooth(mask,sel);
                 maskData = filteredIP.getMaskArray();   
             }
         }else
