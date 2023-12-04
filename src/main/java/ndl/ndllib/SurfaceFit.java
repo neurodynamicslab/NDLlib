@@ -468,24 +468,31 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
             //ip.setRoi(sel);
             
             if (sel.getType() == Roi.RECTANGLE){
-                javax.swing.JOptionPane.showMessageDialog(null, "Error expanding the ROI selection proceeding with no expansion");
+                //javax.swing.JOptionPane.showMessageDialog(null, "Error expanding the ROI selection proceeding with no expansion");
                 System.out.println("Error expanding the ROI selection proceeding with no expansion");
                 maskData = ip.getMaskArray();
                 //ImageProcessor tmpProcessor = new ByteProcessor(maskData);
             }
             else{
                 System.out.println("It is not a rectangular ROI: Proceeding to get the mask");
-                javax.swing.JOptionPane.showConfirmDialog(null, "It is not a rectangular ROI: Proceeding to get the mask");
-                ByteProcessor mask = ip.createMask();
-                 if(mask == null)
-                     javax.swing.JOptionPane.showConfirmDialog(null, "There is a problem mask is null");
-                ImageProcessor filteredIP = gaussSmooth(mask,sel);
-                maskData = filteredIP.getMaskArray();   
-                if(maskData == null)
-                     javax.swing.JOptionPane.showConfirmDialog(null, "There is a problem maskData is null");
-            }
-        }else
-            maskData = ip.getMaskArray();//(byte [])sel.getMask().getPixels();
+                //javax.swing.JOptionPane.showConfirmDialog(null, "It is not a rectangular ROI: Proceeding to get the mask");
+                ImageProcessor mask = sel.getMask();
+                 //if(mask == null)
+                     //javax.swing.JOptionPane.showConfirmDialog(null, "There is a problem mask is null");
+                 if(mask != null){
+                   mask.blurGaussian(this.getGaussRad());
+                   ByteProcessor byteMask = mask.convertToByteProcessor(true);
+                   byteMask.setThreshold(1,255);
+                   if(!byteMask.isThreshold())
+                      byteMask.threshold(1, 255);
+                   ImageProcessor newmask = byteMask.createMask();
+                   maskData = (byte[])newmask.getPixels();
+//                   if(maskData == null)
+//                        javax.swing.JOptionPane.showConfirmDialog(null, "There is a problem maskData is null");
+                  }
+                }
+            }else
+                maskData = ip.getMaskArray();//(byte [])sel.getMask().getPixels();
         selVal = (this.isSelectPixels())? Double.NaN : 0;   //roi is provided but unsampled space inside the rect sele is filled with 0
     }else{                                   //selection is not provided by the user
               
@@ -625,10 +632,10 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
         if(isAssymGauss())
             gaussSmooth(sp,sel,0.02);
         ImageProcessor ip = sp.duplicate();
-        if(sel != null){
-            ShapeRoi sr = new ShapeRoi(sel);
-            sp.setRoi(sr);
-        }
+//        if(sel != null){
+//            ShapeRoi sr = new ShapeRoi(sel);
+//            sp.setRoi(sr);
+//        }
         GaussianBlur gBlur = new GaussianBlur();
         gBlur.blurGaussian(ip, this.getGaussRad());
         return ip;
