@@ -5,7 +5,6 @@ package ndl.ndllib;
 import Jama.Matrix;
 import ij.ImagePlus;
 import ij.gui.Roi;
-import ij.gui.ShapeRoi;
 import ij.plugin.RoiScaler;
 import ij.plugin.filter.GaussianBlur;
 import ij.process.ByteProcessor;
@@ -463,11 +462,11 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
         ry = bRect.y;
         rw = bRect.width;
         rh = bRect.height;
-         javax.swing.JOptionPane.showConfirmDialog(null, "Now is the test");
+         //javax.swing.JOptionPane.showConfirmDialog(null, "Now is the test");
         if(isGaussFilt()){
             //ip.setRoi(sel);
             
-            if (sel.getType() == Roi.RECTANGLE){
+            if (sel.getType() == Roi.RECTANGLE || false){
                 //javax.swing.JOptionPane.showMessageDialog(null, "Error expanding the ROI selection proceeding with no expansion");
                 System.out.println("Error expanding the ROI selection proceeding with no expansion");
                 maskData = ip.getMaskArray();
@@ -510,6 +509,7 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
     
     System.out.println("Mean to be added: "+mean+" Mean on entry: "+orgMean*-1+" Selection provided:  "+ ((sel != null) && this.isUseSelection()) +" Mask is "+(ip.getMask()!= null));
     System.out.println("The width is :" + rw +", "+rx+"The height is "+ rh +"," +ry);
+    //System.out.println("The difference in expanding selection is "  );
 //    ImagePlus imp = new ImagePlus("Aft Mean sub");
 //    imp.setProcessor(ip);
 //    imp.setTitle("Aft Mean sub");
