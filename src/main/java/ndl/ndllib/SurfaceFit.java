@@ -463,38 +463,21 @@ public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
         rw = bRect.width;
         rh = bRect.height;
          //javax.swing.JOptionPane.showConfirmDialog(null, "Now is the test");
-        if(isGaussFilt()){
-            //ip.setRoi(sel);
-            
-            if (sel.getType() == Roi.RECTANGLE || false){
-                //javax.swing.JOptionPane.showMessageDialog(null, "Error expanding the ROI selection proceeding with no expansion");
-                System.out.println("Error expanding the ROI selection proceeding with no expansion");
-                maskData = ip.getMaskArray();
-                //ImageProcessor tmpProcessor = new ByteProcessor(maskData);
+        if(isGaussFilt() && sel.getType() != Roi.RECTANGLE){            
+            ImageProcessor mask = sel.getMask();
+            if(mask != null){
+               mask.blurGaussian(this.getGaussRad());
+               ByteProcessor byteMask = mask.convertToByteProcessor(true);
+               byteMask.setThreshold(1,255);
+               if(!byteMask.isThreshold())
+                  byteMask.threshold(1, 255);
+               ImageProcessor newmask = byteMask.createMask();
+               maskData = (byte[])newmask.getPixels();
             }
-            else{
-                System.out.println("It is not a rectangular ROI: Proceeding to get the mask");
-                //javax.swing.JOptionPane.showConfirmDialog(null, "It is not a rectangular ROI: Proceeding to get the mask");
-                ImageProcessor mask = sel.getMask();
-                 //if(mask == null)
-                     //javax.swing.JOptionPane.showConfirmDialog(null, "There is a problem mask is null");
-                 if(mask != null){
-                   mask.blurGaussian(this.getGaussRad());
-                   ByteProcessor byteMask = mask.convertToByteProcessor(true);
-                   byteMask.setThreshold(1,255);
-                   if(!byteMask.isThreshold())
-                      byteMask.threshold(1, 255);
-                   ImageProcessor newmask = byteMask.createMask();
-                   maskData = (byte[])newmask.getPixels();
-//                   if(maskData == null)
-//                        javax.swing.JOptionPane.showConfirmDialog(null, "There is a problem maskData is null");
-                  }
-                }
-            }else
-                maskData = ip.getMaskArray();//(byte [])sel.getMask().getPixels();
+        }else
+            maskData = ip.getMaskArray();
         selVal = (this.isSelectPixels())? Double.NaN : 0;   //roi is provided but unsampled space inside the rect sele is filled with 0
-    }else{                                   //selection is not provided by the user
-              
+    }else{                                   //selection is not provided by the user        
         Rectangle rectRoi = ip.getRoi();  
         rx = rectRoi.x;
         ry = rectRoi.y;
