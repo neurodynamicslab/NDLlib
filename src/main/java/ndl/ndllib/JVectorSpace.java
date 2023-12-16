@@ -212,7 +212,7 @@ public class JVectorSpace {
         nRow = 0;
     }
     return pixels;
-    }
+  }
  public JVectorSpace (int xRes, int yRes){
      this.xRes = xRes;
      this.yRes = yRes;
@@ -351,7 +351,7 @@ public class JVectorSpace {
          xIdx = (int) Math.round((Double)XYCord.getX());
          yIdx = (int) Math.round((Double)XYCord.getY());
          try{
-         scale = scalingMat[xIdx][yIdx].doubleValue(); 
+            scale = scalingMat[xIdx][yIdx].doubleValue(); 
          }
          catch(Exception e){
              System.out.println(e.getMessage()+ " Resolution mismatch !");
@@ -360,10 +360,11 @@ public class JVectorSpace {
      }
      return scaledSpace;
  }
- public JVectorSpace scaleVectors(double[][]scaleMat){
-     if(scaleMat[0].length != yRes && scaleMat.length != xRes){
-         System.out.println("The dimension of the scaling Matrix in (x X y)/(width X height) "+ scaleMat.length + " X " 
-                                            + scaleMat[0].length + "is not same as vector space" + this.xRes + " X " + this.yRes);
+ 
+ public JVectorSpace normaliseVectors(double[][]normMat){
+     if(normMat[0].length != yRes && normMat.length != xRes){
+         System.out.println("The dimension of the norm Matrix in (x X y)/(width X height) "+ normMat.length + " X " 
+                                            + normMat[0].length + "is not same as vector space" + this.xRes + " X " + this.yRes);
          return null;
      }
      //if(this.isResMismatch()) Do a reset of res or inform the user to set it
@@ -377,7 +378,8 @@ public class JVectorSpace {
          xIdx = (int) Math.round((Double)XYCord.getX());
          yIdx = (int) Math.round((Double)XYCord.getY());
          try{
-         scale = scaleMat[xIdx][yIdx]; 
+            var val = normMat[xIdx][yIdx];
+            scale = val != 0 ? 1.0/val : 0; 
          }
          catch(Exception e){
              System.out.println(e.getMessage()+ " Resolution mismatch !");
