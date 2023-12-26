@@ -89,7 +89,7 @@ public class Tracker extends Thread {
         }
         
         return pointsWithinRadius;
-    }
+    }   //this does not need to be static ? also it shld be private
 
     /**
      * Finds the nearest contour to the position in the previous frame and asserts it as the position in current frame
@@ -165,11 +165,12 @@ public class Tracker extends Thread {
             throw new RuntimeException("Must call setDataFileName before tracking.");
         }
         double fps = cap.get(5);
-        double spf = 1 / fps;
+        double spf = fps != 0 ? 1 / fps : 0;                       //Need to check if the fps is a non-zero value
         boolean cont = true;
-        while (cap.isOpened() && nextFrame()) {
+        boolean nextFramePres = nextFrame();
+        while (cap.isOpened() && nextFramePres) {
             if (currFrame == null) break;
-            if ((currFrameNo<startFrame)||(currFrameNo>endFrame)) {
+            if (((currFrameNo>startFrame)&&(currFrameNo<endFrame))) {
                 cont = this.eventHandler.loopCall(currFrame, cont);
                 try {
                     if (this.sleep) Thread.sleep((long) (spf));
@@ -177,8 +178,8 @@ public class Tracker extends Thread {
                     e.printStackTrace();
                 }
             }
-            if (!cont) continue;
-            if (!nextFrame()) break;
+            //if (!cont) continue;
+            nextFramePres = nextFrame();                    //will be skipping the frame every call to nextFrame() advances by one frame.
             currFrameNo++;
         }
         cap.release();
