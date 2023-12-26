@@ -164,8 +164,8 @@ public class Tracker extends Thread {
         if (cap==null) {
             throw new RuntimeException("Must call setDataFileName before tracking.");
         }
-        double fps = cap.get(5);
-        double spf = fps != 0 ? 1 / fps : 0;                       //Need to check if the fps is a non-zero value
+        double lfps = cap.get(5);
+        double spf = lfps != 0 ? 1 / lfps : 0;                       //Need to check if the fps is a non-zero value
         boolean cont = true;
         boolean nextFramePres = nextFrame();
         while (cap.isOpened() && nextFramePres) {
@@ -175,7 +175,7 @@ public class Tracker extends Thread {
                 try {
                     if (this.sleep) Thread.sleep((long) (spf));
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    System.out.print("Pausing was interupted \n");
                 }
             }
             //if (!cont) continue;
@@ -193,6 +193,10 @@ public class Tracker extends Thread {
         return true;
     }
     
+    /**
+     * Call this method to start the tracking
+     */
+    @Override
     public void run() {
         this.track();
     }
