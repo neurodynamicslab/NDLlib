@@ -184,8 +184,10 @@ public class JVectorSpace {
     int currX, currY;
     int dataIdx = 0;
     for(OrdXYData curPixel : getSpace()){
-        currX = (int)Math.round((double)curPixel.getX());
-        currY = (int)Math.round((double)curPixel.getY());
+        var X = curPixel.getX();
+        var Y = curPixel.getY();
+        currX = X instanceof Integer ? X.intValue() : (int)Math.round((double) X);
+        currY = Y instanceof Integer ? Y.intValue() : (int)Math.round((double)Y);
         tempArray[currX][currY] += getVectors().get(dataIdx).getComponent(Idx).doubleValue();
         
         dataIdx++;
@@ -255,8 +257,8 @@ public class JVectorSpace {
  }
  private void addVector(OrdXYData coordinates, JVector vector, boolean resAuto){
      
-     int currX = (int) Math.round((double)coordinates.getX()); 
-     int currY = (int) Math.round((double)coordinates.getY());
+     int currX = (int) Math.round((double)coordinates.getX().doubleValue()); 
+     int currY = (int) Math.round((double)coordinates.getY().doubleValue());
      int currComp = vector.getNComponents();
         if(this.vectors.isEmpty()){
             this.setnComp(vector.getNComponents());

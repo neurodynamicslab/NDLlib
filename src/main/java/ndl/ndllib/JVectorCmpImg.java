@@ -44,7 +44,8 @@ public class JVectorCmpImg {
         this.xRes = vectors1.getxRes();
         this.yRes = vectors1.getyRes();  
         for (int compCount = 0; compCount < cmp; compCount++) {
-            heatMapImg[compCount] = new FloatProcessor(xRes, yRes, vectors1.getCompArray(compCount));
+            double[] vectorCmps = vectors1.getCompArray(compCount);
+            heatMapImg[compCount] = new FloatProcessor(xRes, yRes, vectorCmps);
         }
     }
     public void addScalar(JHeatMapArray hmaps){
@@ -89,12 +90,14 @@ public class JVectorCmpImg {
     }
     public void saveStack(String filename){
         FileSaver fs;
-        fs = new FileSaver(new ImagePlus("",getImageStack()));
-        fs.saveAsRawStack(filename);
+        fs = new FileSaver(new ImagePlus("c",getImageStack()));
+        fs.saveAsTiffStack(filename+".tiff");
+       // fs.saveAsRawStack(filename);
+        
     }
     public ImageStack getImageStack(){
         ImageStack stk;
-        stk = new ImageStack(xRes,yRes,heatMapImg.length);
+        stk = new ImageStack(xRes,yRes);
         for(ImageProcessor ip : heatMapImg)
             stk.addSlice(ip);
         return stk;

@@ -144,13 +144,19 @@ public class DataTrace_ver_3 extends ArrayList<OrdXYErrData>{
             
         } catch (FileNotFoundException ex) {
             //Logger.getLogger(DataTrace_ver_inwrks.class.getName()).log(Level.SEVERE, null, ex);
-            javax.swing.JOptionPane.showMessageDialog(null, " Not able to find the file : "+fileName);
+            //javax.swing.JOptionPane.showMessageDialog(null, " Not able to find the file : "+fileName);
+            System.out.println( " Not able to find the file : "+fileName);
+            return false;
+            
         }
         catch (IOException ex){
-            javax.swing.JOptionPane.showMessageDialog(null, " Not able to read the file : "+fileName);
+            //javax.swing.JOptionPane.showMessageDialog(null, " Not able to read the file : "+fileName);
+            System.out.println( " File found but not able to read the file : "+fileName);
+            return false;
         }     
         if(warning)
-            javax.swing.JOptionPane.showMessageDialog(null,"Warning: The number data elements ");
+            //javax.swing.JOptionPane.showMessageDialog(null,"Warning: The number data elements do not match");
+            System.out.println("Warning: Unrecogonised charecter ignored");
         return true;
     }
     /**Overloaded function of populateData() with data separator set to '\t' and line separator set to '\n' and

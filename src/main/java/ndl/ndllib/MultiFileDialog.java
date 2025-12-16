@@ -18,7 +18,7 @@ import java.io.File;
 import javax.swing.*;
 
 /**
- *
+ *  
  * @author Every one
  */
 public class MultiFileDialog extends javax.swing.JDialog {
@@ -326,6 +326,12 @@ public String  setCloseAction(ActionListener Instance, String Cmd){
     }
 
     /**
+     * result can have any of the following values 
+     * private final int OPEN = 1;
+        private final int EXIT = 0;
+        private final int SUCCESS = 2;
+        private final int CLOSE = -1;
+        private final int error = -2;
      * @return the result
      */
     public int getResult() {
