@@ -77,14 +77,26 @@ public class JVectorCmpImg {
        String no="";
        int nFil ;
        for(ImagePlus imp : images){
-          //fs = new FileSaver(imp); 
-          //fs.saveAsTiff(folderPath+File.separator+prefix+"_Comp");
+           
           nFil = nDigits - (int)Math.log10(curNumber);
           while(nFil > no.length())
               no = no + "0";
+          
+          Natural_NeighInter nni = new Natural_NeighInter(imp);
+          nni.setPath(folderPath+File.separator+prefix+"_surf"+no+curNumber+"_tin");
+          nni.finaliseSurface();
+          var impOut = nni.imageOutput();
+          if(impOut == null)
+              System.out.println("Interpolation failed \n");
+          else{
+            //impOut.show();
+            fs = new FileSaver(impOut); 
+            fs.saveAsTiff(folderPath+File.separator+prefix+"_surf"+no+curNumber);
+          }
+                             
           IJ.saveAsTiff(imp, folderPath+File.separator+prefix+"_Comp"+no+curNumber);
           curNumber++;
-          //javax.swing.JOptionPane.showMessageDialog(null, "The file save is : "+folderPath+File.separator+prefix+"_Comp");
+          //javax.swing.JOptionPane.showMessageDialog(null, "The file saved is : "+folderPath+File.separator+prefix+"_Comp");
        }  
        
     }

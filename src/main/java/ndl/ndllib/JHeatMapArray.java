@@ -131,7 +131,7 @@ public class JHeatMapArray extends Object{
             x = (int)Math.round(xDouble);
             y = (int)Math.round(yDouble);
             if(x <= xRes && y <= yRes && x >= 0 && y >= 0)
-                pixelArray [x][y] += (1*getMultiplier());
+                pixelArray [x-1][y-1] += (1*getMultiplier());
             Idx++;
         }
         
