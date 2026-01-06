@@ -82,17 +82,17 @@ public class JVectorCmpImg {
           while(nFil > no.length())
               no = no + "0";
           
-          Natural_NeighInter nni = new Natural_NeighInter(imp);
-          nni.setPath(folderPath+File.separator+prefix+"_surf"+no+curNumber+"_tin");
-          nni.finaliseSurface();
-          var impOut = nni.imageOutput();
-          if(impOut == null)
-              System.out.println("Interpolation failed \n");
-          else{
-            //impOut.show();
-            fs = new FileSaver(impOut); 
-            fs.saveAsTiff(folderPath+File.separator+prefix+"_surf"+no+curNumber);
-          }
+//          Natural_NeighInter nni = new Natural_NeighInter(imp);
+//          nni.setPath(folderPath+File.separator+prefix+"_surf"+no+curNumber+"_tin");
+//          nni.finaliseSurface();
+//          var impOut = nni.imageOutput();
+//          if(impOut == null)
+//              System.out.println("Interpolation failed \n");
+//          else{
+//            //impOut.show();
+//            fs = new FileSaver(impOut); 
+//            fs.saveAsTiff(folderPath+File.separator+prefix+"_surf"+no+curNumber);
+//          }
                              
           IJ.saveAsTiff(imp, folderPath+File.separator+prefix+"_Comp"+no+curNumber);
           curNumber++;

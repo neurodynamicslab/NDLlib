@@ -5,8 +5,11 @@ import ij.ImagePlus;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.io.FileSaver;
+import ij.measure.Measurements;
 import ij.process.FloatProcessor;
+import ij.process.FloatStatistics;
 import ij.process.ImageProcessor;
+import ij.process.ImageStatistics;
 import java.awt.Polygon;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -28,6 +31,67 @@ import org.tinfour.utils.rendering.RendererForTinInspection;
  * @author balaji
  */
 public class Natural_NeighInter {
+
+    /**
+     * @return the FILTER
+     */
+    public int getFILTER() {
+        return FILTER;
+    }
+
+    /**
+     * @param FILTER the FILTER to set
+     */
+    public void setFILTER(int FILTER) {
+        this.FILTER = FILTER;
+    }
+
+    /**
+     * @return the BlurRad
+     */
+    public double getBlurRad() {
+        return BlurRad;
+    }
+
+    /**
+     * @param BlurRad the BlurRad to set
+     */
+    public void setBlurRad(double BlurRad) {
+        this.BlurRad = BlurRad;
+    }
+
+    /**
+     * @return the Normalise
+     */
+    public boolean isNormalise() {
+        return Normalise;
+    }
+
+    /**
+     * @param Normalise the Normalise to set
+     */
+    public void setNormalise(boolean Normalise) {
+        this.Normalise = Normalise;
+    }
+
+    /**
+     * @return the saveTIN
+     */
+    public boolean isSaveTIN() {
+        return saveTIN;
+    }
+
+    /**
+     * @param saveTIN the saveTIN to set
+     */
+    public void setSaveTIN(boolean saveTIN) {
+        this.saveTIN = saveTIN;
+    }
+
+    private int FILTER = 0;
+    private double BlurRad = 1;
+    private boolean Normalise = true;
+    private boolean saveTIN = true;
 
     /**
      * @param path the path to set
@@ -87,8 +151,24 @@ public class Natural_NeighInter {
         //inImg.setProcessor(new FloatProcessor(new float[xRes][yRes]));
         ImageProcessor ip = inImg.getProcessor();
         ImageProcessor dip = ip.duplicate();
-        dip.blurGaussian(5);
-        System.out.println("Strating the sample pts gathering ..."+ xRes + "\t" + yRes);
+        switch(FILTER){
+            case 1 : //Gaussian
+                dip.blurGaussian(BlurRad);
+                break;
+            case 2: //Median
+                dip.filter(ImageProcessor.MEDIAN_FILTER);
+                break;
+            case 3: //Maximum
+                dip.filter(ImageProcessor.MAX);
+                break;
+        }
+        //Normalise
+       if(Normalise){
+            ImageStatistics stat = ImageStatistics.getStatistics(dip);
+            double intDensity = stat.area *stat.mean;
+            dip.multiply(1/intDensity);
+       }   
+        System.out.println("Starting the sample pts gathering ..."+ xRes + "\t" + yRes);
         for ( int x = 0 ; x < xRes ; x++){
             System.out.println("Started reading "+ x +"row" + " of total" + xRes);
             for(int y = 0 ; y < yRes ; y++){
@@ -121,6 +201,10 @@ public class Natural_NeighInter {
             return true;
         }
         return false;
+    }
+    public ImagePlus getSurface(){
+        finaliseSurface();
+        return imageOutput();
     }
     public void finaliseSurface(){
         
@@ -181,11 +265,12 @@ public class Natural_NeighInter {
         //InverseDistanceWeightingInterpolator inter = new InverseDistanceWeightingInterpolator(tin,20,true);
         //GwrTinInterpolator inter = new GwrTinInterpolator(tin);
         
-        
-        outImg = new ImagePlus("Tin",renderer.renderImage(xRes, yRes, 5));
-        FileSaver fs = new FileSaver(outImg);
-        fs.saveAsTiff(path+"Tin");
-        outImg.close();
+        if(isSaveTIN()){
+            outImg = new ImagePlus("Tin",renderer.renderImage(xRes, yRes, 5));
+            FileSaver fs = new FileSaver(outImg);
+            fs.saveAsTiff(path+"Tin");
+            outImg.close();
+        }
         outImg = new ImagePlus();
         //outImg.show();
          
