@@ -439,7 +439,7 @@ public  double[][] FitSurfaceCoeff( double[][] TheImage )
  **/
 public FloatProcessor FitSurface(ImageProcessor sp, Roi sel){
     double mean ;
-    ImageProcessor ip = sp;// = (this.isPreScale())? scale(sp): sp.convertToFloatProcessor();
+    ImageProcessor ip = sp.duplicate();// = (this.isPreScale())? scale(sp): sp.convertToFloatProcessor();
     if(isPreScale()){       
         ip = scale(sp);
         sel = scaleRoi(sel); 

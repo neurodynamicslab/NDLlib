@@ -6,11 +6,14 @@ import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.io.FileSaver;
 import ij.measure.Measurements;
+import ij.plugin.filter.ThresholdToSelection;
+import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
 import ij.process.FloatStatistics;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import org.tinfour.common.IConstraint;
@@ -32,6 +35,41 @@ import org.tinfour.utils.rendering.RendererForTinInspection;
  */
 public class Natural_NeighInter {
 
+    private Rectangle selbound;
+
+    /**
+     * @return the mask
+     */
+    private ByteProcessor getMask() {
+        return mask;
+    }
+    
+    /**
+     * @param mask the mask to set
+     * @return returns true if it was sucessfull in 
+     */
+    public boolean setMask(ByteProcessor mask) {
+        
+            if( mask != null){
+                this.mask = mask;
+                mask.setThreshold(0,255);
+                ThresholdToSelection t2sel = new ThresholdToSelection();
+                this.selection = t2sel.convert(mask);
+                return true;
+            }
+            return false;
+    }
+    
+        
+    /**
+     * @return selection
+     */
+     public Roi getRoi(){
+         return selection;
+     }
+     public void setRoi(Roi roi){
+         this.selection = roi;
+     }
     /**
      * @return the FILTER
      */
@@ -88,11 +126,12 @@ public class Natural_NeighInter {
         this.saveTIN = saveTIN;
     }
 
-    private int FILTER = 0;
+    private int FILTER = -1;
     private double BlurRad = 1;
-    private boolean Normalise = true;
+    private boolean Normalise = false;
     private boolean saveTIN = true;
-
+    private ByteProcessor mask = null;
+    private Roi selection;
     /**
      * @param path the path to set
      */
@@ -132,7 +171,11 @@ public class Natural_NeighInter {
         imageOut.setProcessor(fp);
         return imageOut;
     }
-    public Natural_NeighInter(ImagePlus imp){
+    
+    public Natural_NeighInter(ImagePlus imp,Roi sel){
+        inImg = imp;
+        selection = sel;
+        
         
         setxRes(imp.getWidth());
         setyRes(imp.getHeight());
@@ -141,56 +184,119 @@ public class Natural_NeighInter {
         inImage = new double[xRes][yRes];
         interpolated = false;
         tin.setResolutionRuleForMergedVertices(VertexMergerGroup.ResolutionRule.MeanValue);
-        if(imp.hasImageStack()){
-           inImg = new ImagePlus();
-           inImg.setProcessor(imp.getImageStack().getProcessor(0));
-           
-        }else
-            inImg = imp;
+        
+        //readImgData(imp);
+    }
+    public void initialize(){
+        if(inImg != null){
+           generateMaskData();
+           readImgData(inImg);
+        }
+    }
+
+    public void readImgData(ImagePlus imp) {
         double z;
-        //inImg.setProcessor(new FloatProcessor(new float[xRes][yRes]));
-        ImageProcessor ip = inImg.getProcessor();
-        ImageProcessor dip = ip.duplicate();
-        switch(FILTER){
-            case 1 : //Gaussian
-                dip.blurGaussian(BlurRad);
-                break;
-            case 2: //Median
-                dip.filter(ImageProcessor.MEDIAN_FILTER);
-                break;
-            case 3: //Maximum
-                dip.filter(ImageProcessor.MAX);
-                break;
+        ImageProcessor ip = inImg.getProcessor();       //assume the imagePlus has no stack
+        if(ip == null){
+            System.out.println("Exiting no imagedata to process");
+            return;
         }
+                FILTER = 1;
+                
+                Normalise = true;
+                ImageProcessor dip = ip.duplicate();
+                switch(FILTER){
+                    case 1 : //Gaussian
+                        dip.blurGaussian(20/*BlurRad*/);
+                        break;
+                    case 2: //Median
+                        dip.filter(ImageProcessor.MEDIAN_FILTER);
+                        break;
+                    case 3: //Maximum
+                        dip.filter(ImageProcessor.MAX);
+                        break;
+                }
         //Normalise
-       if(Normalise){
-            ImageStatistics stat = ImageStatistics.getStatistics(dip);
-            double intDensity = stat.area *stat.mean;
-            dip.multiply(1/intDensity);
-       }   
-        System.out.println("Starting the sample pts gathering ..."+ xRes + "\t" + yRes);
-        for ( int x = 0 ; x < xRes ; x++){
-            System.out.println("Started reading "+ x +"row" + " of total" + xRes);
-            for(int y = 0 ; y < yRes ; y++){
-//              
-                z  = ip.getPixelValue(x, y);
-//                
-//                inImage[x][y] = z;
-               if (z > 0) {
-                    double pixel = dip.getPixelValue(x, y);
-                    samplePts.add(new Vertex(x,y,pixel)); 
-                    tin.add(new Vertex (x,y,pixel));
-                    inImage[x][y] = pixel;
-                    xOrd.add(x);
-                    yOrd.add(y);
+               if(Normalise){
+                    ImageStatistics stat = ImageStatistics.getStatistics(dip);
+                    double intDensity = stat.area *stat.mean;
+                    dip.multiply(1/intDensity);
+                    
+                    System.out.println("Mean before normalise :"+
+                            stat.mean+",\t"+ImageStatistics.getStatistics(dip).mean * stat.area+ intDensity + "\t" + yRes);
                }
-            }
-            System.out.println("Finished reading "+ x +"row" + " of total" + xRes);
+        System.out.println("Starting the sample pts gathering ..."+ xRes + "\t" + yRes);
+        //Generate maskarray
+
+        if (mask == null) 
+            generateMaskData();
+
+        double sum = 0  ;
+
+        ImagePlus tstImage = new ImagePlus();
+        tstImage.setProcessor(mask);
+//        tstImage.show();
+        FileSaver fs = new FileSaver(tstImage);
+        fs.saveAsTiff(path+ "maskImg");
+        int yStart,xStart,xStop,yStop;
+        if(selection!= null){
+            
+            yStart = this.selbound.y;
+            xStart = this.selbound.x;
+            yStop = this.selbound.height + yStart;
+            xStop = this.selbound.width + xStart;
+        }else{
+            yStart = xStart = 0;
+            xStop = xRes;
+            yStop = yRes;
         }
-        System.out.println("Finished gathering: Gathered "+ samplePts.size() + " points for interpolation");
+        System.out.println("Started reading from "+ xStart + ", "+yStart+ "," +"stopping at :"+xStop+"," +yStop);
+        for ( int maskY = yStart,y = 0 ; maskY <= yStop ;y++, maskY++){
+            //System.out.println("Started reading "+ x +"row" + " of total" + xRes);
+            for(int maskX = xStart, x = 0 ; maskX <= xStop ; x++,maskX++){
+        //
+
+        //int pIdx = x + y *yRes;
+        if (mask.getPixelValue(x, y) == 255 ) {
+            z = Float.intBitsToFloat(dip.getPixel(maskX, maskY));
+            sum += z;
+            samplePts.add(new Vertex(maskX,maskY,z));
+            tin.add(new Vertex (maskX,maskY,z));
+            inImage[x][y] = z;
+            xOrd.add(maskX);
+            yOrd.add(maskY);
+        }
+            }
+            //System.out.println("Finished reading "+ x +"row" + " of total" + xRes);
+        }
+        System.out.println("Finished gathering: Gathered "+ samplePts.size() + " points for interpolation" + "with sum of :"+ sum);
+    }
+
+    public void generateMaskData() {
+          
+            
+        if (selection != null){
+            //this.inImg.setRoi(selection);
+            mask = (ByteProcessor) selection.getMask();
+            this.selbound = selection.getBounds();
+        }else{
+                
+            System.out.println("maskData was null so creating one..,");
+            ImageProcessor tmpIp = inImg.getProcessor().duplicate();
+            tmpIp.convertToByte(true);
+            tmpIp.threshold(1);
+            
+            tmpIp.invert();
+            mask = (ByteProcessor)tmpIp;
+//            ThresholdToSelection t2s = new ThresholdToSelection();
+            //selection = t2s.convert(mask);
+        }
+        //maskData  = mask.getMaskArray();
+        //return maskData;
     }
     public boolean addPoint(int x, int y, double z){
         setInterpolated(false);
+        
         if(x < xRes && y < yRes && !(x < 0 || y < 0)){
             inImage[x][y] = z;
             samplePts.add(new Vertex(x,y,z));
@@ -228,34 +334,34 @@ public class Natural_NeighInter {
         
         //set the trajectory as constraints
         
-        PolygonRoi inRoi = new PolygonRoi(xOrd.stream().mapToInt(i->i.intValue()).toArray(), yOrd.stream().mapToInt(i->i.intValue()).toArray(),xOrd.size(),Roi.POLYGON);
+       PolygonRoi inRoi = new PolygonRoi(xOrd.stream().mapToInt(i->i.intValue()).toArray(), yOrd.stream().mapToInt(i->i.intValue()).toArray(),xOrd.size(),Roi.POLYGON);
        
-        convexHull = inRoi.getConvexHull();
+        convexHull =  inRoi.getConvexHull();              //inRoi.getConvexHull();
         int[] convexX = convexHull.xpoints;
         int[] convexY = convexHull.ypoints;
         ArrayList<Vertex> verLst = new ArrayList();
         int idx = 0;
         for( int x : convexX)
-            verLst.add(new Vertex(x,convexY[idx++],1.0));
+            verLst.add(new Vertex(x,convexY[idx],inImage[x][convexY[idx++]]));
         PolygonConstraint cons = new PolygonConstraint(verLst);
         //ArrayList consList = new ArrayList();
 //        LinearConstraint cons = new LinearConstraint(samplePts);
         ArrayList<IConstraint> consList = new ArrayList();
         consList.add(cons);
-        tin.addConstraints(consList,true);
+//        tin.addConstraints(consList,true);
         
-        //if(!status)
-          //  System.out.println("Failed generating TIN");
+//        if(!status)
+//            System.out.println("Failed generating TIN");
         if(!tin.isBootstrapped()){
             System.out.print("tin is not ready: TIN Bootstrapping failed \n");
             return;
         }
         else
-            System.out.print("TIN ready \t" + xExt +"\t"+ yExt +"\n");
+            System.out.print("TIN ready \t" + xExt +"\t"+ yExt +"Bound starts at :"+bound.getX()+","+bound.getY()+"\n");
         
-        RuppertRefiner refiner = new RuppertRefiner(tin,5);
+        RuppertRefiner refiner = new RuppertRefiner(tin,2);
         boolean status = refiner.refine();
-        if(!status)
+                if(!status)
             System.out.println("Refinement failed");
         else
             System.out.println("Refinement sucessfull");
@@ -273,15 +379,16 @@ public class Natural_NeighInter {
         }
         outImg = new ImagePlus();
         //outImg.show();
-         
+        
         FloatProcessor outImgip = new FloatProcessor(new float[xRes][yRes] );
         outImg.setProcessor(outImgip);
-        double z = 0;
-        int xMin = (int) bound.getMinX();
-        int yMin = (int) bound.getMinY();
-        int xMax = (int) bound.getMaxX();
-        int yMax = (int) bound.getMaxY();
-        System.out.println("xMin:"+xMin+"\t"+"yMin:"+yMin+"\t"+"xMax"+xMax+"\t"+"yMax"+yMax);
+        double z;
+        int xMin = (int) bound.getX();
+        int yMin = (int) bound.getY();
+        int xMax = xMin +(int) bound.getWidth();
+        int yMax = yMin +(int) bound.getHeight();
+        System.out.println("xMin:"+xMin+"\t"+"yMin:"+yMin+"\t"+"xMax"+xMax+"\t"+"yMax"+yMax + convexHull.getBounds().width + " " + convexHull.getBounds().height);
+        int pixelCount = 0;
         for (int x = xMin; x < xMax ; x ++ ){
             
             for(int y = yMin ; y < yMax ; y ++){
@@ -291,13 +398,14 @@ public class Natural_NeighInter {
                                 0 ;/*replace with bgd value*/
                     outImg.getProcessor().putPixelValue(x, y, z);  
                     outImage[x][y] = z ;  
-                
+                    if(z == 0)
+                        pixelCount++;
             }
-            if(  (x % 100)  == 0)
-                System.out.println("Col"+x);
+//            if(  (x % 100)  == 0)
+//                System.out.println("Col"+x);
         }
         
-        
+        //System.out.println("There are ");
         setInterpolated(true);
         
     }
