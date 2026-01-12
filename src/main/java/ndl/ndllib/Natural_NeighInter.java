@@ -201,7 +201,7 @@ public class Natural_NeighInter {
             System.out.println("Exiting no imagedata to process");
             return;
         }
-                FILTER = 1;
+                //FILTER = 1;
                 
                 Normalise = true;
                 ImageProcessor dip = ip.duplicate();
@@ -211,6 +211,7 @@ public class Natural_NeighInter {
                         break;
                     case 2: //Median
                         dip.filter(ImageProcessor.MEDIAN_FILTER);
+                        
                         break;
                     case 3: //Maximum
                         dip.filter(ImageProcessor.MAX);
@@ -348,7 +349,7 @@ public class Natural_NeighInter {
 //        LinearConstraint cons = new LinearConstraint(samplePts);
         ArrayList<IConstraint> consList = new ArrayList();
         consList.add(cons);
-//        tin.addConstraints(consList,true);
+ //       tin.addConstraints(consList,true);
         
 //        if(!status)
 //            System.out.println("Failed generating TIN");
