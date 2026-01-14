@@ -349,7 +349,7 @@ public class Natural_NeighInter {
 //        LinearConstraint cons = new LinearConstraint(samplePts);
         ArrayList<IConstraint> consList = new ArrayList();
         consList.add(cons);
- //       tin.addConstraints(consList,true);
+//       tin.addConstraints(consList,true);
         
 //        if(!status)
 //            System.out.println("Failed generating TIN");
