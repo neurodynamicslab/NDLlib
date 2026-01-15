@@ -5,11 +5,9 @@ import ij.ImagePlus;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.io.FileSaver;
-import ij.measure.Measurements;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
-import ij.process.FloatStatistics;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 import java.awt.Polygon;
@@ -17,12 +15,9 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import org.tinfour.common.IConstraint;
-import org.tinfour.common.LinearConstraint;
 import org.tinfour.common.PolygonConstraint;
 import org.tinfour.common.Vertex;
 import org.tinfour.common.VertexMergerGroup;
-import org.tinfour.gwr.GwrTinInterpolator;
-import org.tinfour.interpolation.InverseDistanceWeightingInterpolator;
 import org.tinfour.interpolation.NaturalNeighborInterpolator;
 import org.tinfour.refinement.RuppertRefiner;
 import org.tinfour.standard.IncrementalTin;
@@ -129,7 +124,7 @@ public class Natural_NeighInter {
     private int FILTER = -1;
     private double BlurRad = 1;
     private boolean Normalise = false;
-    private boolean saveTIN = true;
+    private boolean saveTIN = false;
     private ByteProcessor mask = null;
     private Roi selection;
     /**
@@ -203,8 +198,8 @@ public class Natural_NeighInter {
         }
                 //FILTER = 1;
                 
-                Normalise = true;
-                ImageProcessor dip = ip.duplicate();
+                //Normalise = true;
+                FloatProcessor dip = (FloatProcessor)ip.duplicate();
                 switch(FILTER){
                     case 1 : //Gaussian
                         dip.blurGaussian(20/*BlurRad*/);
@@ -213,8 +208,10 @@ public class Natural_NeighInter {
                         dip.filter(ImageProcessor.MEDIAN_FILTER);
                         
                         break;
-                    case 3: //Maximum
+                    case 3: //No filter
                         dip.filter(ImageProcessor.MAX);
+                        break;
+                    default:
                         break;
                 }
         //Normalise
@@ -349,7 +346,7 @@ public class Natural_NeighInter {
 //        LinearConstraint cons = new LinearConstraint(samplePts);
         ArrayList<IConstraint> consList = new ArrayList();
         consList.add(cons);
-//       tin.addConstraints(consList,true);
+  //       tin.addConstraints(consList,true);    
         
 //        if(!status)
 //            System.out.println("Failed generating TIN");
