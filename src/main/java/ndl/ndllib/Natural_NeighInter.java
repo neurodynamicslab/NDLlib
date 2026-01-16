@@ -202,7 +202,7 @@ public class Natural_NeighInter {
                 FloatProcessor dip = (FloatProcessor)ip.duplicate();
                 switch(FILTER){
                     case 1 : //Gaussian
-                        dip.blurGaussian(20/*BlurRad*/);
+                        dip.blurGaussian(this.getBlurRad()/*BlurRad*/);
                         break;
                     case 2: //Median
                         dip.filter(ImageProcessor.MEDIAN_FILTER);
@@ -218,16 +218,14 @@ public class Natural_NeighInter {
                if(Normalise){
                     ImageStatistics stat = ImageStatistics.getStatistics(dip);
                     double intDensity = stat.area *stat.mean;
-                    dip.multiply(1/intDensity);
+                    dip.multiply(1.0/intDensity);
                     
                     System.out.println("Mean before normalise :"+
-                            stat.mean+",\t"+ImageStatistics.getStatistics(dip).mean * stat.area+ intDensity + "\t" + yRes);
+                            stat.mean+",\t"+ImageStatistics.getStatistics(dip).mean * stat.area+ "\t"+intDensity + "\t" + yRes);
                }
         System.out.println("Starting the sample pts gathering ..."+ xRes + "\t" + yRes);
         //Generate maskarray
-
-        if (mask == null) 
-            generateMaskData();
+ 
 
         double sum = 0  ;
 
