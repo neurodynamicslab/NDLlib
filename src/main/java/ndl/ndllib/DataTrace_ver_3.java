@@ -108,7 +108,7 @@ public class DataTrace_ver_3 extends ArrayList<OrdXYErrData>{
                         }else{
                             dataSeg = currLine.split((""+separator));
                             if(dataSeg.length != nDataSegments){
-                                System.out.print("Error reading data: Format mismatch"+ currLine);
+                                System.out.print("Error reading data: Format mismatch"+ currLine + " Separator is" + separator.translateEscapes());
                                 return false;
                             }
                             xData = Double.parseDouble(dataSeg[0]);
