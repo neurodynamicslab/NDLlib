@@ -99,7 +99,7 @@ public class DataTrace_ver_3 extends ArrayList<OrdXYErrData>{
             String currLine = "";
             String [] dataSeg;
             int c;
-            
+            System.out.println( " #Separator is " + Integer.toHexString(separator.toCharArray()[0]));
             switch (nDataSegments){
                 case 2:
                     while ( (c = reader.read()) != -1){
@@ -108,7 +108,8 @@ public class DataTrace_ver_3 extends ArrayList<OrdXYErrData>{
                         }else{
                             dataSeg = currLine.split((""+separator));
                             if(dataSeg.length != nDataSegments){
-                                System.out.print("Error reading data: Format mismatch"+ currLine + " Separator is" + separator.translateEscapes());
+                                char sepC = separator.charAt(0);
+                                System.out.print( " Separator is " + Integer.toHexString(sepC) + " Error reading data: Format mismatch "+ currLine );
                                 return false;
                             }
                             xData = Double.parseDouble(dataSeg[0]);

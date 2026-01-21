@@ -339,11 +339,11 @@ public class Natural_NeighInter {
         int idx = 0;
         for( int x : convexX)
             verLst.add(new Vertex(x,convexY[idx],inImage[x][convexY[idx++]]));
-        PolygonConstraint cons = new PolygonConstraint(verLst);
+       // PolygonConstraint cons = new PolygonConstraint(verLst);
         //ArrayList consList = new ArrayList();
 //        LinearConstraint cons = new LinearConstraint(samplePts);
-        ArrayList<IConstraint> consList = new ArrayList();
-        consList.add(cons);
+       // ArrayList<IConstraint> consList = new ArrayList();
+        //consList.add(cons);
   //       tin.addConstraints(consList,true);    
         
 //        if(!status)
@@ -361,18 +361,18 @@ public class Natural_NeighInter {
             System.out.println("Refinement failed");
         else
             System.out.println("Refinement sucessfull");
-        RendererForTinInspection renderer = new RendererForTinInspection(tin);
+        //RendererForTinInspection renderer = new RendererForTinInspection(tin);
         
         NaturalNeighborInterpolator inter = new NaturalNeighborInterpolator(tin);
         //InverseDistanceWeightingInterpolator inter = new InverseDistanceWeightingInterpolator(tin,20,true);
         //GwrTinInterpolator inter = new GwrTinInterpolator(tin);
         
-        if(isSaveTIN()){
-            outImg = new ImagePlus("Tin",renderer.renderImage(xRes, yRes, 5));
-            FileSaver fs = new FileSaver(outImg);
-            fs.saveAsTiff(path+"Tin");
-            outImg.close();
-        }
+//        if(false/*isSaveTIN()*/){
+//            outImg = new ImagePlus("Tin",renderer.renderImage(xRes, yRes, 5));
+//            FileSaver fs = new FileSaver(outImg);
+//            fs.saveAsTiff(path+"Tin");
+//            outImg.close();
+//        }
         outImg = new ImagePlus();
         //outImg.show();
         
