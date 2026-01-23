@@ -317,7 +317,7 @@ public class Natural_NeighInter {
         }
         else{
             System.out.print("There are " + samplePts.size() +" sample points \t"+
-                    nVertices +"vertices \n");
+                    nVertices +" vertices \n");
         }
         System.out.println("Starting TIN");
         //boolean status = tin.add(samplePts, null);
@@ -330,21 +330,21 @@ public class Natural_NeighInter {
         
         //set the trajectory as constraints
         
-       PolygonRoi inRoi = new PolygonRoi(xOrd.stream().mapToInt(i->i.intValue()).toArray(), yOrd.stream().mapToInt(i->i.intValue()).toArray(),xOrd.size(),Roi.POLYGON);
+        PolygonRoi inRoi = new PolygonRoi(xOrd.stream().mapToInt(i->i).toArray(), yOrd.stream().mapToInt(i->i).toArray(),xOrd.size(),Roi.POLYGON);
        
-        convexHull =  inRoi.getConvexHull();              //inRoi.getConvexHull();
-        int[] convexX = convexHull.xpoints;
-        int[] convexY = convexHull.ypoints;
-        ArrayList<Vertex> verLst = new ArrayList();
-        int idx = 0;
-        for( int x : convexX)
-            verLst.add(new Vertex(x,convexY[idx],inImage[x][convexY[idx++]]));
-       // PolygonConstraint cons = new PolygonConstraint(verLst);
-        //ArrayList consList = new ArrayList();
+        convexHull =  (selection != null) ? selection.getConvexHull() : inRoi.getConvexHull();              //inRoi.getConvexHull();
+//        int[] convexX = convexHull.xpoints;
+//        int[] convexY = convexHull.ypoints;
+//        ArrayList<Vertex> verLst = new ArrayList();
+//        int idx = 0;
+//        for( int x : convexX)
+//            verLst.add(new Vertex(x,convexY[idx],inImage[x][convexY[idx++]]));
+ //       PolygonConstraint cons = new PolygonConstraint(verLst);
+ //       ArrayList consList = new ArrayList();
 //        LinearConstraint cons = new LinearConstraint(samplePts);
-       // ArrayList<IConstraint> consList = new ArrayList();
-        //consList.add(cons);
-  //       tin.addConstraints(consList,true);    
+//        ArrayList<IConstraint> consList = new ArrayList();
+//        consList.add(cons);
+//         tin.addConstraints(consList,true);    
         
 //        if(!status)
 //            System.out.println("Failed generating TIN");
@@ -353,9 +353,9 @@ public class Natural_NeighInter {
             return;
         }
         else
-            System.out.print("TIN ready \t" + xExt +"\t"+ yExt +"Bound starts at :"+bound.getX()+","+bound.getY()+"\n");
+            System.out.print("TIN ready \t" + xExt +"\t"+ yExt +" Bound starts at : "+bound.getX()+" , "+bound.getY()+"\n");
         
-        RuppertRefiner refiner = new RuppertRefiner(tin,2);
+        RuppertRefiner refiner = new RuppertRefiner(tin,2);         //TODO : Badly needs a user setting
         boolean status = refiner.refine();
                 if(!status)
             System.out.println("Refinement failed");
@@ -391,7 +391,7 @@ public class Natural_NeighInter {
                 
                     z = (convexHull.contains(x,y)) ? 
                             inter.interpolate(x,y,null) :
-                                0 ;/*replace with bgd value*/
+                               0 ;/*replace with bgd value*/
                     outImg.getProcessor().putPixelValue(x, y, z);  
                     outImage[x][y] = z ;  
                     if(z == 0)
