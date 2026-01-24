@@ -127,6 +127,21 @@ public class Natural_NeighInter {
     private boolean saveTIN = false;
     private ByteProcessor mask = null;
     private Roi selection;
+    private int minAng = 2;
+    /**
+     * 
+     * @param ang Minimum angle used to refine the TIN
+     */
+    public void setminAng(int ang){
+        minAng = ang;
+    }
+    /**
+     * 
+     * @return the TIN refinement angle
+     */
+    public int getminAng(){
+        return minAng;
+    }
     /**
      * @param path the path to set
      */
@@ -355,7 +370,7 @@ public class Natural_NeighInter {
         else
             System.out.print("TIN ready \t" + xExt +"\t"+ yExt +" Bound starts at : "+bound.getX()+" , "+bound.getY()+"\n");
         
-        RuppertRefiner refiner = new RuppertRefiner(tin,2);         //TODO : Badly needs a user setting
+        RuppertRefiner refiner = new RuppertRefiner(tin,getminAng());         //TODO : Badly needs a user setting
         boolean status = refiner.refine();
                 if(!status)
             System.out.println("Refinement failed");
