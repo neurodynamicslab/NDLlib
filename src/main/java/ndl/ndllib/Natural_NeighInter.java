@@ -233,7 +233,7 @@ public class Natural_NeighInter {
                if(Normalise){
                     ImageStatistics stat = ImageStatistics.getStatistics(dip);
                     double intDensity = stat.area *stat.mean;
-                    dip.multiply(1.0/intDensity);
+                    dip.multiply(1.0/stat.max/*intDensity*/);
                     
                     System.out.println("Mean before normalise :"+
                             stat.mean+",\t"+ImageStatistics.getStatistics(dip).mean * stat.area+ "\t"+intDensity + "\t" + yRes);
@@ -348,18 +348,21 @@ public class Natural_NeighInter {
         PolygonRoi inRoi = new PolygonRoi(xOrd.stream().mapToInt(i->i).toArray(), yOrd.stream().mapToInt(i->i).toArray(),xOrd.size(),Roi.POLYGON);
        
         convexHull =  (selection != null) ? selection.getConvexHull() : inRoi.getConvexHull();              //inRoi.getConvexHull();
-//        int[] convexX = convexHull.xpoints;
-//        int[] convexY = convexHull.ypoints;
-//        ArrayList<Vertex> verLst = new ArrayList();
-//        int idx = 0;
-//        for( int x : convexX)
-//            verLst.add(new Vertex(x,convexY[idx],inImage[x][convexY[idx++]]));
- //       PolygonConstraint cons = new PolygonConstraint(verLst);
- //       ArrayList consList = new ArrayList();
-//        LinearConstraint cons = new LinearConstraint(samplePts);
-//        ArrayList<IConstraint> consList = new ArrayList();
-//        consList.add(cons);
-//         tin.addConstraints(consList,true);    
+        int[] convexX = convexHull.xpoints;
+        int[] convexY = convexHull.ypoints;
+        ArrayList<Vertex> verLst = new ArrayList();
+        int idx = 0;
+        for( int x : convexX)
+            verLst.add(new Vertex(x,convexY[idx],inImage[x][convexY[idx++]]));
+          PolygonConstraint cons = new PolygonConstraint(verLst);
+          cons.complete();
+        
+          ArrayList<IConstraint> consList = new ArrayList();
+            consList.add(cons);
+//            tin.addConstraints(consList,true);    
+            
+//          ArrayList consList = new ArrayList();
+////        LinearConstraint cons = new LinearConstraint(samplePts);
         
 //        if(!status)
 //            System.out.println("Failed generating TIN");
