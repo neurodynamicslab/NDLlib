@@ -205,21 +205,41 @@ public class JVector<N extends Number> {
         int compIdx = 0;
         double maxC,minC,currC;
         
-        maxC = max.getComponent(compIdx).doubleValue();
-        minC = min.getComponent(compIdx).doubleValue();
+//        maxC = max.getComponent(compIdx).doubleValue();
+//        minC = min.getComponent(compIdx).doubleValue();
             
-        var unit = unitsRange/(maxC - minC);
+        double unit ;//= unitsRange/(maxC - minC);
         
         for(Number N : Components){   
         
+            maxC = max.getComponent(compIdx).doubleValue();
+            minC = min.getComponent(compIdx).doubleValue();
+            //var divisor = maxC - minC;
+            unit = unitsRange/(maxC - minC);
+            
             currC = (N.doubleValue()- minC)*unit + minUnits;
             calibComp.add(compIdx,currC);
-            
-//            System.out.printf("MaxC: %f, MinC: %f, currC: %f \n",maxC,minC,currC);        
+            if(N.doubleValue() != 0)
+             System.out.printf("MaxC: %f, MinC: %f, currC: %f  UnCalib: %f\n",maxC,minC,currC,N.doubleValue());        
             compIdx++;          
         }
         
         return new JVector(calibComp);
+    }
+    public boolean isEqual(JVector cmpVector){
+        boolean status = false;
+        int Idx = 0;
+        
+        for (Number cmps : Components){
+            
+            if(status)
+                status = (cmps == cmpVector.getComponent(Idx++));
+            else
+                return status;
+            
+        }
+        
+        return status;
     }
     public void scale(N scale){
         Components = getScaledVector(scale).Components;

@@ -402,14 +402,21 @@ public class JVectorSpace {
      return scaledSpace;
  }
  public JVectorSpace calibrateVectors(double maxUnit, double minUnit){
+     System.out.println("Calibrating Vectors ....");
      JVectorSpace calibSpace = new JVectorSpace(this.xRes,this.yRes);
      JVector calibVector;
      if(!this.isChkMinMaxandAdd())
          this.findMinandMax();
+     if(maxVector.isEqual(minVector)){
+         System.out.println("Vector space does not have distinct max and min vectors using uncalibrated space" + maxVector.toString());
+         //set the calibration flag to false
+         return this;
+     }
      int elementIdx = 0;
      for(OrdXYData coOrd : this.space){
-        calibVector = this.vectors.get(elementIdx).getCalibratedVector(maxVector, minVector, maxUnit, minUnit);
+        calibVector = this.vectors.get(elementIdx++).getCalibratedVector(maxVector, minVector, maxUnit, minUnit);
         calibSpace.addVector(coOrd,calibVector,false);
+        
      }
      
      return calibSpace;

@@ -224,7 +224,7 @@ public class Natural_NeighInter {
                         
                         break;
                     case 3: //No filter
-                        dip.filter(ImageProcessor.MAX);
+                        //dip.filter(ImageProcessor.MAX);
                         break;
                     default:
                         break;
@@ -233,10 +233,11 @@ public class Natural_NeighInter {
                if(Normalise){
                     ImageStatistics stat = ImageStatistics.getStatistics(dip);
                     double intDensity = stat.area *stat.mean;
-                    dip.multiply(1.0/stat.max/*intDensity*/);
+                    if( stat.max != 0) 
+                        dip.multiply(1.0/stat.max/*intDensity*/);
                     
                     System.out.println("Mean before normalise :"+
-                            stat.mean+",\t"+ImageStatistics.getStatistics(dip).mean * stat.area+ "\t"+intDensity + "\t" + yRes);
+                            stat.mean+",\t"+ImageStatistics.getStatistics(dip).mean * stat.area+ "\t"+stat.max + "\t" + intDensity + "\t" + yRes);
                }
         System.out.println("Starting the sample pts gathering ..."+ xRes + "\t" + yRes);
         //Generate maskarray
@@ -402,7 +403,7 @@ public class Natural_NeighInter {
         int xMax = xMin +(int) bound.getWidth();
         int yMax = yMin +(int) bound.getHeight();
         System.out.println("xMin:"+xMin+"\t"+"yMin:"+yMin+"\t"+"xMax"+xMax+"\t"+"yMax"+yMax + convexHull.getBounds().width + " " + convexHull.getBounds().height);
-        int pixelCount = 0;
+//        int pixelCount = 0;
         for (int x = xMin; x < xMax ; x ++ ){
             
             for(int y = yMin ; y < yMax ; y ++){
@@ -412,11 +413,11 @@ public class Natural_NeighInter {
                                0 ;/*replace with bgd value*/
                     outImg.getProcessor().putPixelValue(x, y, z);  
                     outImage[x][y] = z ;  
-                    if(z == 0)
-                        pixelCount++;
+//                    if(z == 0)
+//                        pixelCount++;
             }
 //            if(  (x % 100)  == 0)
-//                System.out.println("Col"+x);
+//                System.out.println("Col"+x);ssssssssssssssssss
         }
         
         //System.out.println("There are ");
