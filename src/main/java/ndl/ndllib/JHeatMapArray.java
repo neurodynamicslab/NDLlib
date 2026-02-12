@@ -25,6 +25,7 @@ public class JHeatMapArray extends Object{
      */
     public void setMultiplier(double multiplier) {
         this.multiplier = multiplier;
+        tsConversionStatus = false;
     }
 
     /**
@@ -39,6 +40,7 @@ public class JHeatMapArray extends Object{
      */
     public void setxRes(int xRes) {
         this.xRes = xRes;
+        tsConversionStatus = false;
     }
 
     /**
@@ -53,6 +55,7 @@ public class JHeatMapArray extends Object{
      */
     public void setyRes(int yRes) {
         this.yRes = yRes;
+        tsConversionStatus = false;
     }
 
     /**
@@ -67,9 +70,13 @@ public class JHeatMapArray extends Object{
      */
     public void setTimeSeries(DataTrace_ver_3 timeSeries) {
         this.timeSeries = timeSeries;
+        tsConversionStatus = false;
+        
     }
     public void appendTimeSeries(DataTrace_ver_3 trace){
+        
         this.timeSeries.addAll(trace);
+        tsConversionStatus = false;
     }
 
     /**
@@ -77,14 +84,19 @@ public class JHeatMapArray extends Object{
      * @return the pixelArray
      */
     public double[][] getPixelArray() {
-        convertTimeSeriestoArray();
+         if(! tsConversionStatus)
+            this.convertTimeSeriestoArray();
+        
+        //convertTimeSeriestoArray();
         return pixelArray;
     }
     public double[][] getPixelArray(int xRes, int yRes){
-        this.setxRes(xRes);
-        this.setyRes(yRes);
-        
-        this.convertTimeSeriestoArray(xRes, yRes);
+        if(! tsConversionStatus){
+            this.setxRes(xRes);
+            this.setyRes(yRes);
+
+            this.convertTimeSeriestoArray(xRes, yRes);
+        }
         return pixelArray;
     }
 
@@ -100,6 +112,7 @@ public class JHeatMapArray extends Object{
     private double multiplier = 10;
     private double [][] pixelArray;
     private DataTrace_ver_3 timeSeries;
+    private boolean tsConversionStatus  = false;                    //reflects if the time series data has been converted to pixelArray or not
     
     /**
      *
@@ -115,6 +128,7 @@ public class JHeatMapArray extends Object{
         setTimeSeries(trace);
         this.setxRes(Math.round((float)(timeSeries.getXMax()-timeSeries.getXMin())));
         this.setyRes(Math.round((float)(timeSeries.getYMax()-timeSeries.getYMin())));
+        tsConversionStatus = false;
     }
     public void convertTimeSeriestoArray(int xRes,int yRes){
         
@@ -131,10 +145,10 @@ public class JHeatMapArray extends Object{
             x = (int)Math.round(xDouble);
             y = (int)Math.round(yDouble);
             if(x <= xRes && y <= yRes && x >= 0 && y >= 0)
-                pixelArray [x-1][y-1] += (1*getMultiplier());
+                pixelArray [x-1][y-1] += (1.0*getMultiplier());
             Idx++;
         }
-        
+       tsConversionStatus = true; 
     }
     public void convertTimeSeriestoArray(){
         this.timeSeries.resetStat();

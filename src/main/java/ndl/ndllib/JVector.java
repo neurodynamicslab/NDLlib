@@ -175,13 +175,17 @@ public class JVector<N extends Number> {
     public  JVector getScaledVector(N scale){
         JVector scaledVect;
         ArrayList<Number> scaledC = new ArrayList();
-        int Idx = 0;
+        //int Idx = 0;
        for(Number x : Components){
            //scaledC.add(Idx, (Double)Components.get(Idx)*(Double)scale);
            scaledC.add(x.doubleValue() * scale.doubleValue());
-           Idx++;
+           //Idx++;
        }
         scaledVect = new JVector(scaledC);
+        
+//        System.out.println("Before Scaling: "+ this.Components.toString());
+//        System.out.println("Scaling with "+ scale.doubleValue() + "\t"+ scaledVect.Components.toString());
+        
         return scaledVect;
     }
     public JVector getScaledVector(JVector scalingVect){
@@ -219,8 +223,8 @@ public class JVector<N extends Number> {
             
             currC = (N.doubleValue()- minC)*unit + minUnits;
             calibComp.add(compIdx,currC);
-            if(N.doubleValue() != 0)
-             System.out.printf("MaxC: %f, MinC: %f, currC: %f  UnCalib: %f\n",maxC,minC,currC,N.doubleValue());        
+//            if(N.doubleValue() != 0)
+//             System.out.printf("MaxC: %f, MinC: %f, currC: %f  UnCalib: %f\n",maxC,minC,currC,N.doubleValue());        
             compIdx++;          
         }
         

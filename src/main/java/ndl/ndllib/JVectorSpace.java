@@ -1,6 +1,7 @@
 package ndl.ndllib;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -377,11 +378,13 @@ public class JVectorSpace {
      int Idx = 0;
      
      for(var XYCord : space){
-         xIdx = (int) Math.round((Double)XYCord.getX());
-         yIdx = (int) Math.round((Double)XYCord.getY());
+         xIdx = (int) Math.round(XYCord.getX().doubleValue());
+         yIdx = (int) Math.round(XYCord.getY().doubleValue());
          try{
-            var val = normMat[xIdx][yIdx];
-            scale = val != 0 ? 1.0/val : 0; 
+            var val = normMat[xIdx-1][yIdx-1];
+//            if(val != 0)
+//                System.out.println(normMat[xIdx][yIdx] + " " + xIdx + " " + yIdx+ " " + val);
+            scale = (val != 0) ? 1.0/val : 0; 
          }
          catch(Exception e){
              System.out.println(e.getMessage()+ " Resolution mismatch !");
@@ -416,7 +419,6 @@ public class JVectorSpace {
      for(OrdXYData coOrd : this.space){
         calibVector = this.vectors.get(elementIdx++).getCalibratedVector(maxVector, minVector, maxUnit, minUnit);
         calibSpace.addVector(coOrd,calibVector,false);
-        
      }
      
      return calibSpace;
@@ -526,6 +528,7 @@ public class JVectorSpace {
     
     public void findMinandMax(){
         for(JVector currVector : vectors){
+//            System.out.println("Vector :" + currVector.Components.toString());
             this.checkAndsetMinMax(currVector);
         }
     }

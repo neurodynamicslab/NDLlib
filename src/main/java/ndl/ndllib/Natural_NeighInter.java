@@ -230,15 +230,15 @@ public class Natural_NeighInter {
                         break;
                 }
         //Normalise
-               if(Normalise){
-                    ImageStatistics stat = ImageStatistics.getStatistics(dip);
-                    double intDensity = stat.area *stat.mean;
-                    if( stat.max != 0) 
-                        dip.multiply(1.0/stat.max/*intDensity*/);
-                    
-                    System.out.println("Mean before normalise :"+
-                            stat.mean+",\t"+ImageStatistics.getStatistics(dip).mean * stat.area+ "\t"+stat.max + "\t" + intDensity + "\t" + yRes);
-               }
+//               if(Normalise){
+//                    ImageStatistics stat = ImageStatistics.getStatistics(dip);
+//                    double intDensity = stat.area *stat.mean;
+//                    if( stat.max != 0) 
+//                        dip.multiply(1.0/stat.max/*intDensity*/);
+//                    
+//                    System.out.println("Mean before normalise :"+
+//                            stat.mean+",\t"+ImageStatistics.getStatistics(dip).mean * stat.area+ "\t"+stat.max + "\t" + intDensity + "\t" + yRes);
+//               }
         System.out.println("Starting the sample pts gathering ..."+ xRes + "\t" + yRes);
         //Generate maskarray
  
