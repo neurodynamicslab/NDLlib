@@ -381,7 +381,7 @@ public class JVectorSpace {
          xIdx = (int) Math.round(XYCord.getX().doubleValue());
          yIdx = (int) Math.round(XYCord.getY().doubleValue());
          try{
-            var val = normMat[xIdx-1][yIdx-1];
+            var val = normMat[xIdx][yIdx];
 //            if(val != 0)
 //                System.out.println(normMat[xIdx][yIdx] + " " + xIdx + " " + yIdx+ " " + val);
             scale = (val != 0) ? 1.0/val : 0; 

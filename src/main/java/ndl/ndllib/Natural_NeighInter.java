@@ -15,6 +15,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import org.tinfour.common.IConstraint;
+import org.tinfour.common.LinearConstraint;
 import org.tinfour.common.PolygonConstraint;
 import org.tinfour.common.Vertex;
 import org.tinfour.common.VertexMergerGroup;
@@ -126,7 +127,7 @@ public class Natural_NeighInter {
     private boolean Normalise = false;
     private boolean saveTIN = false;
     private ByteProcessor mask = null;
-    private Roi selection;
+    private Roi selection,grandSel;
     private int minAng = 2;
     /**
      * 
@@ -270,7 +271,7 @@ public class Natural_NeighInter {
 
         //int pIdx = x + y *yRes;
         if (mask.getPixelValue(x, y) == 255 ) {
-            z = Float.intBitsToFloat(dip.getPixel(maskX, maskY));
+            z = Float.intBitsToFloat(dip.getPixel(maskX, maskY));                   
             sum += z;
             samplePts.add(new Vertex(maskX,maskY,z));
             tin.add(new Vertex (maskX,maskY,z));
@@ -348,19 +349,21 @@ public class Natural_NeighInter {
         
         PolygonRoi inRoi = new PolygonRoi(xOrd.stream().mapToInt(i->i).toArray(), yOrd.stream().mapToInt(i->i).toArray(),xOrd.size(),Roi.POLYGON);
        
-        convexHull =  (selection != null) ? selection.getConvexHull() : inRoi.getConvexHull();              //inRoi.getConvexHull();
-        int[] convexX = convexHull.xpoints;
-        int[] convexY = convexHull.ypoints;
-        ArrayList<Vertex> verLst = new ArrayList();
-        int idx = 0;
-        for( int x : convexX)
-            verLst.add(new Vertex(x,convexY[idx],inImage[x][convexY[idx++]]));
-          PolygonConstraint cons = new PolygonConstraint(verLst);
-          cons.complete();
-        
-          ArrayList<IConstraint> consList = new ArrayList();
-            consList.add(cons);
-//            tin.addConstraints(consList,true);    
+        convexHull =  (grandSel != null) ? grandSel.getConvexHull() : inRoi.getConvexHull();              //inRoi.getConvexHull();
+//        int[] convexX = convexHull.xpoints;
+//        int[] convexY = convexHull.ypoints;
+//        ArrayList<Vertex> verLst = new ArrayList();
+//        int idx = 0;
+//        for( int x : convexX)
+//            verLst.add(new Vertex(x,convexY[idx],inImage[x][convexY[idx++]]));
+//          PolygonConstraint cons = new PolygonConstraint(verLst);
+//          cons.complete();
+          
+//            LinearConstraint cons2 = new LinearConstraint(samplePts);
+//          ArrayList<IConstraint> consList = new ArrayList();
+//            //consList.add(cons);
+//            consList.add(cons2);
+//           tin.addConstraints(consList,true);    
             
 //          ArrayList consList = new ArrayList();
 ////        LinearConstraint cons = new LinearConstraint(samplePts);
@@ -380,13 +383,13 @@ public class Natural_NeighInter {
             System.out.println("Refinement failed");
         else
             System.out.println("Refinement sucessfull");
-        //RendererForTinInspection renderer = new RendererForTinInspection(tin);
+//        RendererForTinInspection renderer = new RendererForTinInspection(tin);
         
         NaturalNeighborInterpolator inter = new NaturalNeighborInterpolator(tin);
         //InverseDistanceWeightingInterpolator inter = new InverseDistanceWeightingInterpolator(tin,20,true);
         //GwrTinInterpolator inter = new GwrTinInterpolator(tin);
         
-//        if(false/*isSaveTIN()*/){
+//        if(true/*isSaveTIN()*/){
 //            outImg = new ImagePlus("Tin",renderer.renderImage(xRes, yRes, 5));
 //            FileSaver fs = new FileSaver(outImg);
 //            fs.saveAsTiff(path+"Tin");
@@ -407,7 +410,7 @@ public class Natural_NeighInter {
         for (int x = xMin; x < xMax ; x ++ ){
             
             for(int y = yMin ; y < yMax ; y ++){
-                
+                    
                     z = (convexHull.contains(x,y)) ? 
                             inter.interpolate(x,y,null) :
                                0 ;/*replace with bgd value*/
@@ -506,5 +509,19 @@ public class Natural_NeighInter {
 
     private void setInterpolated(boolean interpolated) {
         this.interpolated = interpolated;
+    }
+
+    /**
+     * @return the grandSel
+     */
+    public Roi getGrandSel() {
+        return grandSel;
+    }
+
+    /**
+     * @param grandSel the grandSel to set
+     */
+    public void setGrandSel(Roi grandSel) {
+        this.grandSel = grandSel;
     }
 }

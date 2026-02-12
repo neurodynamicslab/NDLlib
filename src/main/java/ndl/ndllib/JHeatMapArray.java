@@ -144,8 +144,8 @@ public class JHeatMapArray extends Object{
             Double yDouble = yPosi.get(Idx);
             x = (int)Math.round(xDouble);
             y = (int)Math.round(yDouble);
-            if(x <= xRes && y <= yRes && x >= 0 && y >= 0)
-                pixelArray [x-1][y-1] += (1.0*getMultiplier());
+            if(x < xRes && y < yRes && x >= 0 && y >= 0)
+                pixelArray [x][y] += (1.0*getMultiplier());
             Idx++;
         }
        tsConversionStatus = true; 
