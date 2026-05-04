@@ -94,7 +94,7 @@ public class JVectorCmpImg {
 //            fs.saveAsTiff(folderPath+File.separator+prefix+"_surf"+no+curNumber);
 //          }
                              
-          IJ.saveAsTiff(imp, folderPath+File.separator+prefix+"_Comp"+no+curNumber);
+          //IJ.saveAsTiff(imp, folderPath+File.separator+prefix+"_Comp"+no+curNumber);
           curNumber++;
           //javax.swing.JOptionPane.showMessageDialog(null, "The file saved is : "+folderPath+File.separator+prefix+"_Comp");
        }  
