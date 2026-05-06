@@ -32,6 +32,7 @@ import org.tinfour.utils.rendering.RendererForTinInspection;
 public class Natural_NeighInter {
 
     private Rectangle selbound;
+    private boolean DEBUG = false;
 
     /**
      * @return the mask
@@ -240,7 +241,9 @@ public class Natural_NeighInter {
 //                    System.out.println("Mean before normalise :"+
 //                            stat.mean+",\t"+ImageStatistics.getStatistics(dip).mean * stat.area+ "\t"+stat.max + "\t" + intDensity + "\t" + yRes);
 //               }
+    if(DEBUG)    
         System.out.println("Starting the sample pts gathering ..."+ xRes + "\t" + yRes);
+    
         //Generate maskarray
  
 
@@ -249,8 +252,10 @@ public class Natural_NeighInter {
         ImagePlus tstImage = new ImagePlus();
         tstImage.setProcessor(mask);
 //        tstImage.show();
-        FileSaver fs = new FileSaver(tstImage);
-        fs.saveAsTiff(path+ "maskImg");
+        if (DEBUG){
+            FileSaver fs = new FileSaver(tstImage);
+            fs.saveAsTiff(path+ "maskImg");
+        }
         int yStart,xStart,xStop,yStop;
         if(selection!= null){
             
@@ -263,7 +268,8 @@ public class Natural_NeighInter {
             xStop = xRes;
             yStop = yRes;
         }
-        System.out.println("Started reading from "+ xStart + ", "+yStart+ "," +"stopping at :"+xStop+"," +yStop);
+        if(DEBUG)
+            System.out.println("Started reading from "+ xStart + ", "+yStart+ "," +"stopping at :"+xStop+"," +yStop);
         for ( int maskY = yStart,y = 0 ; maskY <= yStop ;y++, maskY++){
             //System.out.println("Started reading "+ x +"row" + " of total" + xRes);
             for(int maskX = xStart, x = 0 ; maskX <= xStop ; x++,maskX++){
@@ -282,7 +288,8 @@ public class Natural_NeighInter {
             }
             //System.out.println("Finished reading "+ x +"row" + " of total" + xRes);
         }
-        System.out.println("Finished gathering: Gathered "+ samplePts.size() + " points for interpolation" + "with sum of :"+ sum);
+       if(DEBUG)
+            System.out.println("Finished gathering: Gathered "+ samplePts.size() + " points for interpolation" + "with sum of :"+ sum);
     }
 
     public void generateMaskData() {
@@ -405,7 +412,8 @@ public class Natural_NeighInter {
         int yMin = (int) bound.getY();
         int xMax = xMin +(int) bound.getWidth();
         int yMax = yMin +(int) bound.getHeight();
-        System.out.println("xMin:"+xMin+"\t"+"yMin:"+yMin+"\t"+"xMax"+xMax+"\t"+"yMax"+yMax + convexHull.getBounds().width + " " + convexHull.getBounds().height);
+        if(DEBUG)
+            System.out.println("xMin:"+xMin+"\t"+"yMin:"+yMin+"\t"+"xMax"+xMax+"\t"+"yMax"+yMax + convexHull.getBounds().width + " " + convexHull.getBounds().height);
 //        int pixelCount = 0;
         for (int x = xMin; x < xMax ; x ++ ){
             

@@ -69,7 +69,7 @@ public class JVectorCmpImg {
        ImagePlus [] images = getImages();
        FileSaver fs;
        int nCmps = images.length;
-       int nDigits = (int) Math.log10(nCmps);
+       int nDigits = (nCmps == 0) ? 1 : (int) Math.log10(nCmps);
        int curNumber = 0;
        File folder = new File(folderPath);
        if(!folder.exists())
@@ -78,23 +78,11 @@ public class JVectorCmpImg {
        int nFil ;
        for(ImagePlus imp : images){
            
-          nFil = nDigits - (int)Math.log10(curNumber);
+          nFil = (curNumber == 0)? nDigits - 1 : nDigits - (int)Math.log10(curNumber);
           while(nFil > no.length())
-              no = no + "0";
-          
-//          Natural_NeighInter nni = new Natural_NeighInter(imp);
-//          nni.setPath(folderPath+File.separator+prefix+"_surf"+no+curNumber+"_tin");
-//          nni.finaliseSurface();
-//          var impOut = nni.imageOutput();
-//          if(impOut == null)
-//              System.out.println("Interpolation failed \n");
-//          else{
-//            //impOut.show();
-//            fs = new FileSaver(impOut); 
-//            fs.saveAsTiff(folderPath+File.separator+prefix+"_surf"+no+curNumber);
-//          }
+              no = no + "0";                        //This will be pre padded to the number
                              
-          //IJ.saveAsTiff(imp, folderPath+File.separator+prefix+"_Comp"+no+curNumber);
+          IJ.saveAsTiff(imp, folderPath+File.separator+prefix+"_Comp"+no+curNumber);
           curNumber++;
           //javax.swing.JOptionPane.showMessageDialog(null, "The file saved is : "+folderPath+File.separator+prefix+"_Comp");
        }  
